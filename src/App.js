@@ -1,51 +1,39 @@
 import React from "react";
 import "./App.css";
 
+const squareNum = { column: 8, row: 8 };
+
 function App() {
+    const columns = [];
+    for (let i = 0; i < squareNum.column; i++) {
+        columns.push(<Column rowNum={i} />);
+    }
+
     return (
         <div className="App">
-            {/* <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo" />
-                <p>
-                    Edit <code>src/App.js</code> and save to reload.
-                </p>
-                <a
-                    className="App-link"
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
-            </header> */}
-
-            <div className="board">
-                <Column />
-                <Column />
-                <Column />
-                <Column />
-                <Column />
-                <Column />
-                <Column />
-                <Column />
-            </div>
+            <div className="board">{columns}</div>
         </div>
     );
 }
+
 class Column extends React.Component {
     render() {
+        const squares = [];
+        for (let i = 0; i < squareNum.row; i++) {
+            squares.push(<div className="square" data-rowNum={i}></div>);
+        }
+
         return (
-            <div className="line">
-                <div className="square"></div>
-                <div className="square"></div>
-                <div className="square"></div>
-                <div className="square"></div>
-                <div className="square"></div>
-                <div className="square"></div>
-                <div className="square"></div>
-                <div className="square"></div>
+            <div className="columns" data-rowNum={this.props.rowNum}>
+                {squares}
             </div>
         );
+    }
+}
+
+class Piece extends React.Component {
+    render() {
+        return <div className="piece piece--black"></div>;
     }
 }
 
