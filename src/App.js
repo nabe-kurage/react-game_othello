@@ -4,12 +4,12 @@ import "./App.css";
 const squareNum = { column: 8, row: 8 };
 const defaultPieceSet = {
     white: [
-        [3, 3],
-        [4, 4],
+        { column: 3, row: 3 },
+        { column: 4, row: 4 },
     ],
     black: [
-        [3, 4],
-        [4, 3],
+        { column: 3, row: 4 },
+        { column: 4, row: 3 },
     ],
 };
 
@@ -44,8 +44,24 @@ class Column extends React.Component {
 class Square extends React.Component {
     // TODO: 初期セットをおく
     checkFirstSet(column, row) {
-        if ((column === 4 && row === 4) || (column === 3 && row === 3)) {
-            return <Piece />;
+        // setBlackPiece
+        for (let i = 0; i < defaultPieceSet.black.length; i++) {
+            if (
+                column === defaultPieceSet.black[i].column &&
+                row === defaultPieceSet.black[i].row
+            ) {
+                return <Piece color="black" />;
+            }
+        }
+
+        // setWhitePiece
+        for (let i = 0; i < defaultPieceSet.white.length; i++) {
+            if (
+                column === defaultPieceSet.white[i].column &&
+                row === defaultPieceSet.white[i].row
+            ) {
+                return <Piece color="white" />;
+            }
         }
     }
 
@@ -65,7 +81,11 @@ class Square extends React.Component {
 // コマ
 class Piece extends React.Component {
     render() {
-        return <div className="piece piece--black"></div>;
+        if (this.props.color === "black") {
+            return <div className="piece piece--black"></div>;
+        } else {
+            return <div className="piece piece--white"></div>;
+        }
     }
 }
 
