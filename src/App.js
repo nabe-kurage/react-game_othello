@@ -1,22 +1,97 @@
-import React from "react";
+import React, { useState } from "react";
 import "./App.css";
 
 const squareNum = { column: 8, row: 8 };
-const defaultPieceSet = {
-    white: [
-        { column: 3, row: 3 },
-        { column: 4, row: 4 },
-    ],
-    black: [
-        { column: 3, row: 4 },
-        { column: 4, row: 3 },
-    ],
-};
+const squareAllNum = 64;
+let IsnextPlayerBlack = true;
 
 function App() {
+    const [defaultPieceSet, setDefaultPieceSet] = useState({
+        white: [
+            { column: 3, row: 3 },
+            { column: 4, row: 4 },
+        ],
+        black: [
+            { column: 3, row: 4 },
+            { column: 4, row: 3 },
+        ],
+    });
+
+    // コマをおく
+    const clickHandlar = (column, row) => {
+        // すでにコマが置かれていた場合新たにコマを置かない
+        for (let item of defaultPieceSet.black) {
+            if (item.column === column && item.row === row) {
+                return;
+            }
+        }
+        for (let item of defaultPieceSet.white) {
+            if (item.column === column && item.row === row) {
+                return;
+            }
+        }
+
+        if (IsnextPlayerBlack) {
+            // 左右どちらかにある白がある場合おく
+            for (let item of defaultPieceSet.white) {
+                if (checkAbleToSetPeace(item, column, row)) {
+                    setDefaultPieceSet({
+                        ...defaultPieceSet,
+                        black: [
+                            ...defaultPieceSet.black,
+                            { column: column, row: row },
+                        ],
+                    });
+                    IsnextPlayerBlack = !IsnextPlayerBlack;
+                }
+            }
+        } else {
+            setDefaultPieceSet({
+                ...defaultPieceSet,
+                white: [...defaultPieceSet.white, { column: column, row: row }],
+            });
+            IsnextPlayerBlack = !IsnextPlayerBlack;
+        }
+        checkFinish();
+    };
+
+    //FIXME: 今のところ黒のみ判定
+    const checkAbleToSetPeace = (item, column, row) => {
+        if (
+            (item.column === column + 1 && item.row === row) ||
+            (item.column === column - 1 && item.row === row) ||
+            (item.column === column && item.row === row + 1) ||
+            (item.column === column && item.row === row - 1) ||
+            (item.column === column + 1 && item.row === row + 1) ||
+            (item.column === column + 1 && item.row === row - 1) ||
+            (item.column === column - 1 && item.row === row + 1) ||
+            (item.column === column - 1 && item.row === row - 1)
+        ) {
+            return true;
+        }
+        return false;
+    };
+    const checkFinish = () => {
+        // TODO: check finish before to put piece to all square
+        if (
+            defaultPieceSet.white.length + defaultPieceSet.black.length ===
+            squareAllNum
+        ) {
+            console.log("finish");
+        }
+        // TODO: check which player is winner
+    };
+
     const columns = [];
     for (let i = 0; i < squareNum.column; i++) {
-        columns.push(<Column columnNum={i} />);
+        columns.push(
+            <Column
+                key={i}
+                columnNum={i}
+                defaultPieceSet={defaultPieceSet}
+                clickHandlar={clickHandlar}
+            />
+        );
     }
 
     return (
@@ -32,7 +107,13 @@ class Column extends React.Component {
         const squares = [];
         for (let i = 0; i < squareNum.row; i++) {
             squares.push(
-                <Square columnNum={this.props.columnNum} rowNum={i} />
+                <Square
+                    key={i}
+                    columnNum={this.props.columnNum}
+                    rowNum={i}
+                    defaultPieceSet={this.props.defaultPieceSet}
+                    clickHandlar={this.props.clickHandlar}
+                />
             );
         }
 
@@ -42,23 +123,21 @@ class Column extends React.Component {
 
 // 横1マス
 class Square extends React.Component {
-    // TODO: 初期セットをおく
     checkFirstSet(column, row) {
         // setBlackPiece
-        for (let i = 0; i < defaultPieceSet.black.length; i++) {
+        for (let i = 0; i < this.props.defaultPieceSet.black.length; i++) {
             if (
-                column === defaultPieceSet.black[i].column &&
-                row === defaultPieceSet.black[i].row
+                column === this.props.defaultPieceSet.black[i].column &&
+                row === this.props.defaultPieceSet.black[i].row
             ) {
                 return <Piece color="black" />;
             }
         }
-
         // setWhitePiece
-        for (let i = 0; i < defaultPieceSet.white.length; i++) {
+        for (let i = 0; i < this.props.defaultPieceSet.white.length; i++) {
             if (
-                column === defaultPieceSet.white[i].column &&
-                row === defaultPieceSet.white[i].row
+                column === this.props.defaultPieceSet.white[i].column &&
+                row === this.props.defaultPieceSet.white[i].row
             ) {
                 return <Piece color="white" />;
             }
@@ -69,8 +148,14 @@ class Square extends React.Component {
         return (
             <div
                 className="square"
+                onClick={() => {
+                    this.props.clickHandlar(
+                        this.props.columnNum,
+                        this.props.rowNum
+                    );
+                }}
                 data-column={this.props.columnNum}
-                data-rowNum={this.props.rowNum}
+                data-row={this.props.rowNum}
             >
                 {this.checkFirstSet(this.props.columnNum, this.props.rowNum)}
             </div>
