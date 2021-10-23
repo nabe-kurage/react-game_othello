@@ -5,82 +5,124 @@ const squareNum = { column: 8, row: 8 };
 const squareAllNum = 64;
 let IsnextPlayerBlack = true;
 
+// column = |||, row = 三
 // class App extends .. でもできる。その場合constructorやthis.stateといった感じでobujectを定義する形になる
 function App() {
-    const [defaultPieceSet, setDefaultPieceSet] = useState({
-        white: [
-            { column: 3, row: 3 },
-            { column: 4, row: 4 },
-        ],
-        black: [
-            { column: 3, row: 4 },
-            { column: 4, row: 3 },
-        ],
+    let [count, setCount] = useState(0);
+    const [pieceSet, setPieceSet] = useState({
+        whiteCol: {
+            3: [3],
+            4: [4],
+        },
+        blackCol: {
+            3: [4],
+            4: [3],
+        },
     });
 
     // コマをおく
     const clickHandlar = (column, row) => {
-        // すでにコマが置かれていた場合新たにコマを置かない
-        for (let item of defaultPieceSet.black) {
-            if (item.column === column && item.row === row) {
-                return;
-            }
-        }
-        for (let item of defaultPieceSet.white) {
-            if (item.column === column && item.row === row) {
-                return;
-            }
+        if (!checkAbleToSetPeace(column, row)) {
+            return;
         }
 
+        let newPieceSet;
         if (IsnextPlayerBlack) {
-            // 左右どちらかにある白がある場合おく
-            for (let item of defaultPieceSet.white) {
-                if (checkAbleToSetPeace(item, column, row)) {
-                    setDefaultPieceSet({
-                        ...defaultPieceSet,
-                        black: [
-                            ...defaultPieceSet.black,
-                            { column: column, row: row },
-                        ],
-                    });
-                    IsnextPlayerBlack = !IsnextPlayerBlack;
-                }
-            }
+            newPieceSet = pieceSet.blackCol;
         } else {
-            setDefaultPieceSet({
-                ...defaultPieceSet,
-                white: [...defaultPieceSet.white, { column: column, row: row }],
-            });
-            IsnextPlayerBlack = !IsnextPlayerBlack;
+            newPieceSet = pieceSet.whiteCol;
         }
+
+        if (newPieceSet[column]) {
+            newPieceSet[column].push(row);
+        } else {
+            newPieceSet[column] = [row];
+        }
+        setPieceSet({ ...pieceSet, newPieceSet });
+
+        IsnextPlayerBlack = !IsnextPlayerBlack;
+        setCount(count + 1);
         checkFinish();
     };
 
     //FIXME: 今のところ黒のみ判定
-    const checkAbleToSetPeace = (item, column, row) => {
+    const checkAbleToSetPeace = (column, row) => {
+        // すでにコマが置かれていた場合新たにコマを置かない
         if (
-            (item.column === column + 1 && item.row === row) ||
-            (item.column === column - 1 && item.row === row) ||
-            (item.column === column && item.row === row + 1) ||
-            (item.column === column && item.row === row - 1) ||
-            (item.column === column + 1 && item.row === row + 1) ||
-            (item.column === column + 1 && item.row === row - 1) ||
-            (item.column === column - 1 && item.row === row + 1) ||
-            (item.column === column - 1 && item.row === row - 1)
+            (pieceSet.whiteCol[column] &&
+                pieceSet.whiteCol[column].indexOf(row) > -1) ||
+            (pieceSet.blackCol[column] &&
+                pieceSet.blackCol[column].indexOf(row) > -1)
+        ) {
+            console.log("すでに置かれたマスです");
+            return false;
+        }
+
+        // const check = (item, column, row) => {
+        //     // 存在するかチェック
+        //     // 存在しなかったら return false
+        //     // 相手の色が存在したらもう一回自分を呼んでそれをreturn
+        //     // 自分の色が存在したらreturn true
+        // };
+        // if (item.column === column + 1 && item.row === row) {
+        // }
+
+        const checkAnablePutPeace = (column, row, incrementArray, index) => {
+            const PlayerPeaceSet = IsnextPlayerBlack ? "blackCol" : "whiteCol";
+            const OpponentPlayerPeaceSet = !IsnextPlayerBlack
+                ? "blackCol"
+                : "whiteCol";
+
+            const incrementedColumn = column + incrementArray[0];
+            const incrementedRpw = row + incrementArray[1];
+
+            if (
+                pieceSet[OpponentPlayerPeaceSet][incrementedColumn] &&
+                pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
+                    incrementedRpw
+                ) > -1
+            ) {
+                return checkAnablePutPeace(
+                    incrementedColumn,
+                    incrementedRpw,
+                    incrementArray,
+                    index + 1
+                );
+            }
+            if (
+                index > 0 &&
+                pieceSet[PlayerPeaceSet][incrementedColumn] &&
+                pieceSet[PlayerPeaceSet][incrementedColumn].indexOf(
+                    incrementedRpw
+                ) > -1
+            ) {
+                return true;
+            }
+            return false;
+        };
+
+        // 上に置いた場合
+
+        if (
+            checkAnablePutPeace(column, row, [0, 1], 0) ||
+            checkAnablePutPeace(column, row, [1, 0], 0) ||
+            checkAnablePutPeace(column, row, [1, 1], 0) ||
+            checkAnablePutPeace(column, row, [1, -1], 0) ||
+            checkAnablePutPeace(column, row, [0, -1], 0) ||
+            checkAnablePutPeace(column, row, [-1, 0], 0) ||
+            checkAnablePutPeace(column, row, [-1, -1], 0) ||
+            checkAnablePutPeace(column, row, [-1, 1], 0)
         ) {
             return true;
         }
-        return false;
     };
     const checkFinish = () => {
         // TODO: check finish before to put piece to all square
-        if (
-            defaultPieceSet.white.length + defaultPieceSet.black.length ===
-            squareAllNum
-        ) {
-            console.log("finish");
-        }
         // TODO: check which player is winner
+        if (count === squareAllNum) {
+            console.log("finish");
+            // TODO: winner check
+        }
     };
 
     const columns = [];
@@ -89,7 +131,7 @@ function App() {
             <Column
                 key={i}
                 columnNum={i}
-                defaultPieceSet={defaultPieceSet}
+                pieceSet={pieceSet}
                 clickHandlar={clickHandlar}
             />
         );
@@ -114,7 +156,7 @@ class Column extends React.Component {
                     key={i}
                     columnNum={this.props.columnNum}
                     rowNum={i}
-                    defaultPieceSet={this.props.defaultPieceSet}
+                    pieceSet={this.props.pieceSet}
                     clickHandlar={this.props.clickHandlar}
                 />
             );
@@ -127,23 +169,17 @@ class Column extends React.Component {
 // 横1マス
 class Square extends React.Component {
     checkFirstSet(column, row) {
-        // setBlackPiece
-        for (let i = 0; i < this.props.defaultPieceSet.black.length; i++) {
-            if (
-                column === this.props.defaultPieceSet.black[i].column &&
-                row === this.props.defaultPieceSet.black[i].row
-            ) {
-                return <Piece color="black" />;
-            }
+        if (
+            this.props.pieceSet.blackCol[column] &&
+            this.props.pieceSet.blackCol[column].indexOf(row) > -1
+        ) {
+            return <Piece color="black" />;
         }
-        // setWhitePiece
-        for (let i = 0; i < this.props.defaultPieceSet.white.length; i++) {
-            if (
-                column === this.props.defaultPieceSet.white[i].column &&
-                row === this.props.defaultPieceSet.white[i].row
-            ) {
-                return <Piece color="white" />;
-            }
+        if (
+            this.props.pieceSet.whiteCol[column] &&
+            this.props.pieceSet.whiteCol[column].indexOf(row) > -1
+        ) {
+            return <Piece color="white" />;
         }
     }
 
@@ -160,6 +196,8 @@ class Square extends React.Component {
                 data-column={this.props.columnNum}
                 data-row={this.props.rowNum}
             >
+                c:{this.props.columnNum}
+                r:{this.props.rowNum}
                 {this.checkFirstSet(this.props.columnNum, this.props.rowNum)}
             </div>
         );
