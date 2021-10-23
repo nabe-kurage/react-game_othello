@@ -7,16 +7,7 @@ let IsnextPlayerBlack = true;
 
 // column = |||, row = 三
 function App() {
-    // const [defaultPieceSet, setDefaultPieceSet] = useState({
-    //     white: [
-    //         { column: 3, row: 3 },
-    //         { column: 4, row: 4 },
-    //     ],
-    //     black: [
-    //         { column: 3, row: 4 },
-    //         { column: 4, row: 3 },
-    //     ],
-    // });
+    let [count, setCount] = useState(0);
     const [pieceSet, setPieceSet] = useState({
         whiteCol: {
             3: [3],
@@ -49,6 +40,7 @@ function App() {
         setPieceSet({ ...pieceSet, newPieceSet });
 
         IsnextPlayerBlack = !IsnextPlayerBlack;
+        setCount(count + 1);
         checkFinish();
     };
 
@@ -74,23 +66,51 @@ function App() {
         // if (item.column === column + 1 && item.row === row) {
         // }
 
+        const checkAnablePutPeace = (column, row, incrementArray, index) => {
+            const PlayerPeaceSet = IsnextPlayerBlack ? "blackCol" : "whiteCol";
+            const OpponentPlayerPeaceSet = !IsnextPlayerBlack
+                ? "blackCol"
+                : "whiteCol";
+
+            const incrementedColumn = column + incrementArray[0];
+            const incrementedRpw = row + incrementArray[1];
+
+            if (
+                pieceSet[OpponentPlayerPeaceSet][incrementedColumn] &&
+                pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
+                    incrementedRpw
+                ) > -1
+            ) {
+                return checkAnablePutPeace(
+                    incrementedColumn,
+                    incrementedRpw,
+                    incrementArray,
+                    index + 1
+                );
+            }
+            if (
+                index > 0 &&
+                pieceSet[PlayerPeaceSet][incrementedColumn] &&
+                pieceSet[PlayerPeaceSet][incrementedColumn].indexOf(
+                    incrementedRpw
+                ) > -1
+            ) {
+                return true;
+            }
+            return false;
+        };
+
+        // 上に置いた場合
+
         if (
-            (pieceSet.whiteCol[column + 1] &&
-                pieceSet.whiteCol[column + 1].indexOf(row) > -1) ||
-            (pieceSet.whiteCol[column + 1] &&
-                pieceSet.whiteCol[column + 1].indexOf(row + 1) > -1) ||
-            (pieceSet.whiteCol[column + 1] &&
-                pieceSet.whiteCol[column + 1].indexOf(row - 1) > -1) ||
-            (pieceSet.whiteCol[column] &&
-                pieceSet.whiteCol[column].indexOf(row + 1) > -1) ||
-            (pieceSet.whiteCol[column] &&
-                pieceSet.whiteCol[column].indexOf(row - 1) > -1) ||
-            (pieceSet.whiteCol[column - 1] &&
-                pieceSet.whiteCol[column - 1].indexOf(row) > -1) ||
-            (pieceSet.whiteCol[column - 1] &&
-                pieceSet.whiteCol[column - 1].indexOf(row + 1) > -1) ||
-            (pieceSet.whiteCol[column - 1] &&
-                pieceSet.whiteCol[column - 1].indexOf(row - 1) > -1)
+            checkAnablePutPeace(column, row, [0, 1], 0) ||
+            checkAnablePutPeace(column, row, [1, 0], 0) ||
+            checkAnablePutPeace(column, row, [1, 1], 0) ||
+            checkAnablePutPeace(column, row, [1, -1], 0) ||
+            checkAnablePutPeace(column, row, [0, -1], 0) ||
+            checkAnablePutPeace(column, row, [-1, 0], 0) ||
+            checkAnablePutPeace(column, row, [-1, -1], 0) ||
+            checkAnablePutPeace(column, row, [-1, 1], 0)
         ) {
             return true;
         }
@@ -98,7 +118,10 @@ function App() {
     const checkFinish = () => {
         // TODO: check finish before to put piece to all square
         // TODO: check which player is winner
-        console.log("checkFinish");
+        if (count === squareAllNum) {
+            console.log("finish");
+            // TODO: winner check
+        }
     };
 
     const columns = [];
