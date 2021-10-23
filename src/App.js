@@ -26,10 +26,12 @@ function App() {
             return;
         }
 
-        let newPieceSet;
+        let newPieceSet, colName;
         if (IsnextPlayerBlack) {
+            colName = "blackCol";
             newPieceSet = pieceSet.blackCol;
         } else {
+            colName = "whiteCol";
             newPieceSet = pieceSet.whiteCol;
         }
 
@@ -38,82 +40,169 @@ function App() {
         } else {
             newPieceSet[column] = [row];
         }
-        setPieceSet({ ...pieceSet, newPieceSet });
+        setPieceSet({ ...pieceSet, [colName]: newPieceSet });
 
         IsnextPlayerBlack = !IsnextPlayerBlack;
         setCount(count + 1);
         checkFinish();
     };
 
-    //FIXME: 今のところ黒のみ判定
     const checkAbleToSetPeace = (column, row) => {
         // すでにコマが置かれていた場合新たにコマを置かない
         if (
-            (pieceSet.whiteCol[column] &&
-                pieceSet.whiteCol[column].indexOf(row) > -1) ||
-            (pieceSet.blackCol[column] &&
-                pieceSet.blackCol[column].indexOf(row) > -1)
+            pieceSet.whiteCol[column]?.indexOf(row) > -1 ||
+            pieceSet.blackCol[column]?.indexOf(row) > -1
         ) {
             console.log("すでに置かれたマスです");
             return false;
         }
 
-        // const check = (item, column, row) => {
-        //     // 存在するかチェック
-        //     // 存在しなかったら return false
-        //     // 相手の色が存在したらもう一回自分を呼んでそれをreturn
-        //     // 自分の色が存在したらreturn true
-        // };
-        // if (item.column === column + 1 && item.row === row) {
-        // }
-
-        const checkAnablePutPeace = (column, row, incrementArray, index) => {
-            const PlayerPeaceSet = IsnextPlayerBlack ? "blackCol" : "whiteCol";
-            const OpponentPlayerPeaceSet = !IsnextPlayerBlack
-                ? "blackCol"
-                : "whiteCol";
-
-            const incrementedColumn = column + incrementArray[0];
-            const incrementedRpw = row + incrementArray[1];
-
-            if (
-                pieceSet[OpponentPlayerPeaceSet][incrementedColumn] &&
-                pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
-                    incrementedRpw
-                ) > -1
-            ) {
-                return checkAnablePutPeace(
-                    incrementedColumn,
-                    incrementedRpw,
-                    incrementArray,
-                    index + 1
-                );
-            }
-            if (
-                index > 0 &&
-                pieceSet[PlayerPeaceSet][incrementedColumn] &&
-                pieceSet[PlayerPeaceSet][incrementedColumn].indexOf(
-                    incrementedRpw
-                ) > -1
-            ) {
-                return true;
-            }
+        if (
+            !checkAnablePutPeace(column, row, [0, 1], 0) &&
+            !checkAnablePutPeace(column, row, [1, 0], 0) &&
+            !checkAnablePutPeace(column, row, [1, 1], 0) &&
+            !checkAnablePutPeace(column, row, [1, -1], 0) &&
+            !checkAnablePutPeace(column, row, [0, -1], 0) &&
+            !checkAnablePutPeace(column, row, [-1, 0], 0) &&
+            !checkAnablePutPeace(column, row, [-1, -1], 0) &&
+            !checkAnablePutPeace(column, row, [-1, 1], 0)
+        ) {
+            //FIXME 該当するものだけ変えるようにしないといけない。
             return false;
-        };
+        }
+        putPeace(column, row);
 
-        // 上に置いた場合
+        return true;
+    };
+
+    const checkAnablePutPeace = (column, row, incrementArray, index) => {
+        const PlayerPeaceSet = IsnextPlayerBlack ? "blackCol" : "whiteCol";
+        const OpponentPlayerPeaceSet = !IsnextPlayerBlack
+            ? "blackCol"
+            : "whiteCol";
+
+        const incrementedColumn = column + incrementArray[0];
+        const incrementedRow = row + incrementArray[1];
 
         if (
-            checkAnablePutPeace(column, row, [0, 1], 0) ||
-            checkAnablePutPeace(column, row, [1, 0], 0) ||
-            checkAnablePutPeace(column, row, [1, 1], 0) ||
-            checkAnablePutPeace(column, row, [1, -1], 0) ||
-            checkAnablePutPeace(column, row, [0, -1], 0) ||
-            checkAnablePutPeace(column, row, [-1, 0], 0) ||
-            checkAnablePutPeace(column, row, [-1, -1], 0) ||
-            checkAnablePutPeace(column, row, [-1, 1], 0)
+            pieceSet[OpponentPlayerPeaceSet][incrementedColumn] &&
+            pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
+                incrementedRow
+            ) > -1
+        ) {
+            return checkAnablePutPeace(
+                incrementedColumn,
+                incrementedRow,
+                incrementArray,
+                index + 1
+            );
+        }
+        if (
+            index > 0 &&
+            pieceSet[PlayerPeaceSet][incrementedColumn] &&
+            pieceSet[PlayerPeaceSet][incrementedColumn].indexOf(
+                incrementedRow
+            ) > -1
         ) {
             return true;
+        }
+        return false;
+    };
+
+    //TODO: ここで間のコマを反転させる
+    const changePeace = (column, row, incrementArray, index) => {
+        const PlayerPeaceSet = IsnextPlayerBlack ? "blackCol" : "whiteCol";
+        const OpponentPlayerPeaceSet = !IsnextPlayerBlack
+            ? "blackCol"
+            : "whiteCol";
+
+        const incrementedColumn = column + incrementArray[0];
+        const incrementedRow = row + incrementArray[1];
+
+        if (
+            pieceSet[OpponentPlayerPeaceSet][incrementedColumn] &&
+            pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
+                incrementedRow
+            ) > -1
+        ) {
+            //  ここで新しいデータに変更
+            let newPieceSet = pieceSet;
+
+            let colName, OpponentName;
+            if (IsnextPlayerBlack) {
+                colName = "blackCol";
+                OpponentName = "whiteCol";
+            } else {
+                colName = "whiteCol";
+                OpponentName = "blackCol";
+            }
+
+            if (newPieceSet[PlayerPeaceSet][incrementedColumn]) {
+                newPieceSet[PlayerPeaceSet][incrementedColumn].push(
+                    incrementedRow
+                );
+            } else {
+                newPieceSet[PlayerPeaceSet][incrementedColumn] = [
+                    incrementedRow,
+                ];
+            }
+
+            newPieceSet[OpponentPlayerPeaceSet][incrementedColumn].splice(
+                pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
+                    incrementedRow
+                ),
+                1
+            );
+
+            setPieceSet({
+                ...pieceSet,
+                [colName]: newPieceSet[PlayerPeaceSet],
+                [OpponentName]: newPieceSet[OpponentPlayerPeaceSet],
+            });
+
+            return checkAnablePutPeace(
+                incrementedColumn,
+                incrementedRow,
+                incrementArray,
+                index + 1
+            );
+        }
+        if (
+            index > 0 &&
+            pieceSet[PlayerPeaceSet][incrementedColumn] &&
+            pieceSet[PlayerPeaceSet][incrementedColumn].indexOf(
+                incrementedRow
+            ) > -1
+        ) {
+            return true;
+        }
+        return false;
+    };
+
+    const putPeace = (column, row) => {
+        if (checkAnablePutPeace(column, row, [0, 1], 0)) {
+            changePeace(column, row, [0, 1], 0);
+        }
+        if (checkAnablePutPeace(column, row, [0, -1], 0)) {
+            changePeace(column, row, [0, -1], 0);
+        }
+        if (checkAnablePutPeace(column, row, [1, 0], 0)) {
+            changePeace(column, row, [1, 0], 0);
+        }
+        if (checkAnablePutPeace(column, row, [1, 1], 0)) {
+            changePeace(column, row, [1, 1], 0);
+        }
+        if (checkAnablePutPeace(column, row, [1, -1], 0)) {
+            changePeace(column, row, [1, -1], 0);
+        }
+        if (checkAnablePutPeace(column, row, [-1, 0], 0)) {
+            changePeace(column, row, [-1, 0], 0);
+        }
+        if (checkAnablePutPeace(column, row, [-1, 1], 0)) {
+            changePeace(column, row, [-1, 1], 0);
+        }
+        if (checkAnablePutPeace(column, row, [-1, 1], 0)) {
+            changePeace(column, row, [-1, -1], 0);
         }
     };
     const checkFinish = () => {
