@@ -6,6 +6,7 @@ const squareAllNum = 64;
 let IsnextPlayerBlack = true;
 
 // column = |||, row = 三
+// class App extends .. でもできる。その場合constructorやthis.stateといった感じでobujectを定義する形になる
 function App() {
     let [count, setCount] = useState(0);
     const [pieceSet, setPieceSet] = useState({
@@ -143,6 +144,8 @@ function App() {
     );
 }
 
+// renderしかないものはfunction コンポーネントにしても良いはず
+// function Column (props){ ... this.propsがpropsで参照できるように}
 // 縦1ライン
 class Column extends React.Component {
     render() {
