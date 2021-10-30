@@ -19,6 +19,7 @@ function App() {
             4: [3],
         },
     });
+    // const [isNextPlayerBlack, setNextPlayerBlack] = useState(true);
 
     // コマをおく
     const clickHandlar = (column, row) => {
@@ -208,9 +209,8 @@ function App() {
         if (checkAnablePutPeace(column, row, [-1, -1], 0)) {
             changePeace(column, row, [-1, -1], 0);
         }
-
-        console.log(pieceSet);
     };
+
     const checkFinish = () => {
         // TODO: check finish before to put piece to all square
         // TODO: check which player is winner
@@ -218,6 +218,10 @@ function App() {
             console.log("finish");
             // TODO: winner check
         }
+    };
+
+    const changePlayer = () => {
+        IsnextPlayerBlack = !IsnextPlayerBlack;
     };
 
     const columns = [];
@@ -234,6 +238,9 @@ function App() {
 
     return (
         <div className="App">
+            <div>nextPlayer: {IsnextPlayerBlack ? "black" : "white"}</div>
+            <div>Winner: white</div>
+            <button onClick={changePlayer}>skip</button>
             <div className="board">{columns}</div>
         </div>
     );

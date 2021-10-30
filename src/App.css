@@ -2,8 +2,10 @@
     display: flex;
     align-items: center;
     justify-content: space-around;
+    flex-direction: column;
     min-height: 100vh;
     background: #113;
+    color: #fff;
 }
 
 .App-header {
