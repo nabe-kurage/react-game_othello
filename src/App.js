@@ -116,27 +116,28 @@ function App() {
             ? "blackCol"
             : "whiteCol";
 
-        const incrementedColumn = column + incrementArray[0];
-        const incrementedRow = row + incrementArray[1];
+        // ERROR: 一個以上ひっくり返すときに一個しかひっくり返らない
+        //SOLVE: whileして繰り返す
+        let incrementedColumn = column + incrementArray[0];
+        let incrementedRow = row + incrementArray[1];
+        let newPieceSet = pieceSet;
 
-        if (
+        let colName, OpponentName;
+        if (IsnextPlayerBlack) {
+            colName = "blackCol";
+            OpponentName = "whiteCol";
+        } else {
+            colName = "whiteCol";
+            OpponentName = "blackCol";
+        }
+
+        while (
             pieceSet[OpponentPlayerPeaceSet][incrementedColumn] &&
             pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
                 incrementedRow
             ) > -1
         ) {
             //  ここで新しいデータに変更
-            let newPieceSet = pieceSet;
-
-            let colName, OpponentName;
-            if (IsnextPlayerBlack) {
-                colName = "blackCol";
-                OpponentName = "whiteCol";
-            } else {
-                colName = "whiteCol";
-                OpponentName = "blackCol";
-            }
-
             if (newPieceSet[PlayerPeaceSet][incrementedColumn]) {
                 newPieceSet[PlayerPeaceSet][incrementedColumn].push(
                     incrementedRow
@@ -154,29 +155,32 @@ function App() {
                 1
             );
 
-            setPieceSet({
-                ...pieceSet,
-                [colName]: newPieceSet[PlayerPeaceSet],
-                [OpponentName]: newPieceSet[OpponentPlayerPeaceSet],
-            });
+            if (
+                newPieceSet[OpponentPlayerPeaceSet][incrementedColumn]
+                    .length === 0
+            ) {
+                delete newPieceSet[OpponentPlayerPeaceSet][incrementedColumn];
+            }
 
-            return checkAnablePutPeace(
-                incrementedColumn,
-                incrementedRow,
-                incrementArray,
-                index + 1
-            );
+            incrementedColumn = incrementedColumn + incrementArray[0];
+            incrementedRow = incrementedRow + incrementArray[1];
         }
-        if (
-            index > 0 &&
-            pieceSet[PlayerPeaceSet][incrementedColumn] &&
-            pieceSet[PlayerPeaceSet][incrementedColumn].indexOf(
-                incrementedRow
-            ) > -1
-        ) {
-            return true;
-        }
-        return false;
+
+        //ERROR: はじめ白→黒で白にする際になってくれないのを直す
+        //SOLVE:  [-1,-1]のところが値が間違っていた
+
+        setPieceSet({
+            ...pieceSet,
+            [colName]: newPieceSet[PlayerPeaceSet],
+            [OpponentName]: newPieceSet[OpponentPlayerPeaceSet],
+        });
+
+        return checkAnablePutPeace(
+            incrementedColumn,
+            incrementedRow,
+            incrementArray,
+            index + 1
+        );
     };
 
     const putPeace = (column, row) => {
@@ -201,9 +205,11 @@ function App() {
         if (checkAnablePutPeace(column, row, [-1, 1], 0)) {
             changePeace(column, row, [-1, 1], 0);
         }
-        if (checkAnablePutPeace(column, row, [-1, 1], 0)) {
+        if (checkAnablePutPeace(column, row, [-1, -1], 0)) {
             changePeace(column, row, [-1, -1], 0);
         }
+
+        console.log(pieceSet);
     };
     const checkFinish = () => {
         // TODO: check finish before to put piece to all square
