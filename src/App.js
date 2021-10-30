@@ -1,33 +1,18 @@
 import React, { useState } from "react";
 import "./App.css";
-
-const squareNum = { column: 8, row: 8 };
-const directionsArray = [
-    [0, 1],
-    [0, -1],
-    [1, 0],
-    [1, 1],
-    [1, -1],
-    [-1, 0],
-    [-1, 1],
-    [-1, -1],
-];
-const squareAllNum = 64;
+import {
+    squareNum,
+    directionsArray,
+    squareAllNum,
+    defaultPieceSet,
+    COLUMN,
+} from "./constData.js";
 
 // column = |||, row = 三
 // class App extends .. でもできる。その場合constructorやthis.stateといった感じでobujectを定義する形になる
 function App() {
     let [count, setCount] = useState(0);
-    const [pieceSet, setPieceSet] = useState({
-        whiteCol: {
-            3: [3],
-            4: [4],
-        },
-        blackCol: {
-            3: [4],
-            4: [3],
-        },
-    });
+    const [pieceSet, setPieceSet] = useState({ ...defaultPieceSet });
     const [isNextPlayerBlack, setNextPlayerBlack] = useState(true);
 
     // コマをおく
@@ -38,10 +23,10 @@ function App() {
 
         let newPieceSet, colName;
         if (isNextPlayerBlack) {
-            colName = "blackCol";
+            colName = COLUMN.BLACK;
             newPieceSet = pieceSet.blackCol;
         } else {
-            colName = "whiteCol";
+            colName = COLUMN.WHITE;
             newPieceSet = pieceSet.whiteCol;
         }
 
@@ -77,10 +62,10 @@ function App() {
     };
 
     const checkAnablePutPeace = (column, row, incrementArray, index) => {
-        const PlayerPeaceSet = isNextPlayerBlack ? "blackCol" : "whiteCol";
+        const PlayerPeaceSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
         const OpponentPlayerPeaceSet = !isNextPlayerBlack
-            ? "blackCol"
-            : "whiteCol";
+            ? COLUMN.BLACK
+            : COLUMN.WHITE;
 
         const incrementedColumn = column + incrementArray[0];
         const incrementedRow = row + incrementArray[1];
@@ -112,10 +97,10 @@ function App() {
 
     // コマの変更
     const changePeace = (column, row, incrementArray, index) => {
-        const PlayerPeaceSet = isNextPlayerBlack ? "blackCol" : "whiteCol";
+        const PlayerPeaceSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
         const OpponentPlayerPeaceSet = !isNextPlayerBlack
-            ? "blackCol"
-            : "whiteCol";
+            ? COLUMN.BLACK
+            : COLUMN.WHITE;
 
         // ERROR: 一個以上ひっくり返すときに一個しかひっくり返らない
         //SOLVE: whileして繰り返す
@@ -253,8 +238,6 @@ class Square extends React.Component {
                 data-column={this.props.columnNum}
                 data-row={this.props.rowNum}
             >
-                c:{this.props.columnNum}
-                r:{this.props.rowNum}
                 {this.checkFirstSet(this.props.columnNum, this.props.rowNum)}
             </div>
         );
