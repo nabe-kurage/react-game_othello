@@ -2,6 +2,16 @@ import React, { useState } from "react";
 import "./App.css";
 
 const squareNum = { column: 8, row: 8 };
+const directionsArray = [
+    [0, 1],
+    [0, -1],
+    [1, 0],
+    [1, 1],
+    [1, -1],
+    [-1, 0],
+    [-1, 1],
+    [-1, -1],
+];
 const squareAllNum = 64;
 
 // column = |||, row = 三
@@ -57,21 +67,13 @@ function App() {
             return false;
         }
 
-        if (
-            !checkAnablePutPeace(column, row, [0, 1], 0) &&
-            !checkAnablePutPeace(column, row, [1, 0], 0) &&
-            !checkAnablePutPeace(column, row, [1, 1], 0) &&
-            !checkAnablePutPeace(column, row, [1, -1], 0) &&
-            !checkAnablePutPeace(column, row, [0, -1], 0) &&
-            !checkAnablePutPeace(column, row, [-1, 0], 0) &&
-            !checkAnablePutPeace(column, row, [-1, -1], 0) &&
-            !checkAnablePutPeace(column, row, [-1, 1], 0)
-        ) {
-            return false;
+        for (let i = 0; i < directionsArray.length; i++) {
+            if (checkAnablePutPeace(column, row, directionsArray[i], 0)) {
+                putPeace(column, row);
+                return true;
+            }
         }
-        putPeace(column, row);
-
-        return true;
+        return false;
     };
 
     const checkAnablePutPeace = (column, row, incrementArray, index) => {
@@ -108,7 +110,7 @@ function App() {
         return false;
     };
 
-    //TODO: ここで間のコマを反転させる
+    // コマの変更
     const changePeace = (column, row, incrementArray, index) => {
         const PlayerPeaceSet = isNextPlayerBlack ? "blackCol" : "whiteCol";
         const OpponentPlayerPeaceSet = !isNextPlayerBlack
@@ -122,12 +124,11 @@ function App() {
         let newPieceSet = pieceSet;
 
         while (
-            pieceSet[OpponentPlayerPeaceSet][incrementedColumn] &&
-            pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
+            pieceSet[OpponentPlayerPeaceSet][incrementedColumn]?.indexOf(
                 incrementedRow
             ) > -1
         ) {
-            //  ここで新しいデータに変更
+            // ひっくり返すコマ
             if (newPieceSet[PlayerPeaceSet][incrementedColumn]) {
                 newPieceSet[PlayerPeaceSet][incrementedColumn].push(
                     incrementedRow
@@ -137,7 +138,7 @@ function App() {
                     incrementedRow,
                 ];
             }
-
+            // ひっくり返されるコマ
             newPieceSet[OpponentPlayerPeaceSet][incrementedColumn].splice(
                 pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
                     incrementedRow
@@ -145,46 +146,19 @@ function App() {
                 1
             );
 
-            if (
-                newPieceSet[OpponentPlayerPeaceSet][incrementedColumn]
-                    .length === 0
-            ) {
-                delete newPieceSet[OpponentPlayerPeaceSet][incrementedColumn];
-            }
-
             incrementedColumn = incrementedColumn + incrementArray[0];
             incrementedRow = incrementedRow + incrementArray[1];
         }
 
-        //ERROR: はじめ白→黒で白にする際になってくれないのを直す
-        //SOLVE:  [-1,-1]のところが値が間違っていた
-
+        //ERROR: はじめ白→黒で白にする際になってくれないのを直す→[-1,-1]のところが値が間違っていた
         setPieceSet({
             ...pieceSet,
             [PlayerPeaceSet]: newPieceSet[PlayerPeaceSet],
             [OpponentPlayerPeaceSet]: newPieceSet[OpponentPlayerPeaceSet],
         });
-
-        return checkAnablePutPeace(
-            incrementedColumn,
-            incrementedRow,
-            incrementArray,
-            index + 1
-        );
     };
 
     const putPeace = (column, row) => {
-        const directionsArray = [
-            [0, 1],
-            [0, -1],
-            [1, 0],
-            [1, 1],
-            [1, -1],
-            [-1, 0],
-            [-1, 1],
-            [-1, -1],
-        ];
-
         directionsArray.forEach((direction) => {
             if (checkAnablePutPeace(column, row, direction, 0)) {
                 changePeace(column, row, direction, 0);
