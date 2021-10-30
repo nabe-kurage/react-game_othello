@@ -3,7 +3,6 @@ import "./App.css";
 
 const squareNum = { column: 8, row: 8 };
 const squareAllNum = 64;
-let IsnextPlayerBlack = true;
 
 // column = |||, row = 三
 // class App extends .. でもできる。その場合constructorやthis.stateといった感じでobujectを定義する形になる
@@ -19,7 +18,7 @@ function App() {
             4: [3],
         },
     });
-    // const [isNextPlayerBlack, setNextPlayerBlack] = useState(true);
+    const [isNextPlayerBlack, setNextPlayerBlack] = useState(true);
 
     // コマをおく
     const clickHandlar = (column, row) => {
@@ -28,7 +27,7 @@ function App() {
         }
 
         let newPieceSet, colName;
-        if (IsnextPlayerBlack) {
+        if (isNextPlayerBlack) {
             colName = "blackCol";
             newPieceSet = pieceSet.blackCol;
         } else {
@@ -42,8 +41,8 @@ function App() {
             newPieceSet[column] = [row];
         }
         setPieceSet({ ...pieceSet, [colName]: newPieceSet });
+        changePlayer();
 
-        IsnextPlayerBlack = !IsnextPlayerBlack;
         setCount(count + 1);
         checkFinish();
     };
@@ -68,7 +67,6 @@ function App() {
             !checkAnablePutPeace(column, row, [-1, -1], 0) &&
             !checkAnablePutPeace(column, row, [-1, 1], 0)
         ) {
-            //FIXME 該当するものだけ変えるようにしないといけない。
             return false;
         }
         putPeace(column, row);
@@ -77,8 +75,8 @@ function App() {
     };
 
     const checkAnablePutPeace = (column, row, incrementArray, index) => {
-        const PlayerPeaceSet = IsnextPlayerBlack ? "blackCol" : "whiteCol";
-        const OpponentPlayerPeaceSet = !IsnextPlayerBlack
+        const PlayerPeaceSet = isNextPlayerBlack ? "blackCol" : "whiteCol";
+        const OpponentPlayerPeaceSet = !isNextPlayerBlack
             ? "blackCol"
             : "whiteCol";
 
@@ -112,8 +110,8 @@ function App() {
 
     //TODO: ここで間のコマを反転させる
     const changePeace = (column, row, incrementArray, index) => {
-        const PlayerPeaceSet = IsnextPlayerBlack ? "blackCol" : "whiteCol";
-        const OpponentPlayerPeaceSet = !IsnextPlayerBlack
+        const PlayerPeaceSet = isNextPlayerBlack ? "blackCol" : "whiteCol";
+        const OpponentPlayerPeaceSet = !isNextPlayerBlack
             ? "blackCol"
             : "whiteCol";
 
@@ -122,15 +120,6 @@ function App() {
         let incrementedColumn = column + incrementArray[0];
         let incrementedRow = row + incrementArray[1];
         let newPieceSet = pieceSet;
-
-        let colName, OpponentName;
-        if (IsnextPlayerBlack) {
-            colName = "blackCol";
-            OpponentName = "whiteCol";
-        } else {
-            colName = "whiteCol";
-            OpponentName = "blackCol";
-        }
 
         while (
             pieceSet[OpponentPlayerPeaceSet][incrementedColumn] &&
@@ -172,8 +161,8 @@ function App() {
 
         setPieceSet({
             ...pieceSet,
-            [colName]: newPieceSet[PlayerPeaceSet],
-            [OpponentName]: newPieceSet[OpponentPlayerPeaceSet],
+            [PlayerPeaceSet]: newPieceSet[PlayerPeaceSet],
+            [OpponentPlayerPeaceSet]: newPieceSet[OpponentPlayerPeaceSet],
         });
 
         return checkAnablePutPeace(
@@ -185,30 +174,22 @@ function App() {
     };
 
     const putPeace = (column, row) => {
-        if (checkAnablePutPeace(column, row, [0, 1], 0)) {
-            changePeace(column, row, [0, 1], 0);
-        }
-        if (checkAnablePutPeace(column, row, [0, -1], 0)) {
-            changePeace(column, row, [0, -1], 0);
-        }
-        if (checkAnablePutPeace(column, row, [1, 0], 0)) {
-            changePeace(column, row, [1, 0], 0);
-        }
-        if (checkAnablePutPeace(column, row, [1, 1], 0)) {
-            changePeace(column, row, [1, 1], 0);
-        }
-        if (checkAnablePutPeace(column, row, [1, -1], 0)) {
-            changePeace(column, row, [1, -1], 0);
-        }
-        if (checkAnablePutPeace(column, row, [-1, 0], 0)) {
-            changePeace(column, row, [-1, 0], 0);
-        }
-        if (checkAnablePutPeace(column, row, [-1, 1], 0)) {
-            changePeace(column, row, [-1, 1], 0);
-        }
-        if (checkAnablePutPeace(column, row, [-1, -1], 0)) {
-            changePeace(column, row, [-1, -1], 0);
-        }
+        const directionsArray = [
+            [0, 1],
+            [0, -1],
+            [1, 0],
+            [1, 1],
+            [1, -1],
+            [-1, 0],
+            [-1, 1],
+            [-1, -1],
+        ];
+
+        directionsArray.forEach((direction) => {
+            if (checkAnablePutPeace(column, row, direction, 0)) {
+                changePeace(column, row, direction, 0);
+            }
+        });
     };
 
     const checkFinish = () => {
@@ -221,7 +202,7 @@ function App() {
     };
 
     const changePlayer = () => {
-        IsnextPlayerBlack = !IsnextPlayerBlack;
+        setNextPlayerBlack((isNextPlayerBlack) => !isNextPlayerBlack);
     };
 
     const columns = [];
@@ -238,7 +219,7 @@ function App() {
 
     return (
         <div className="App">
-            <div>nextPlayer: {IsnextPlayerBlack ? "black" : "white"}</div>
+            <div>nextPlayer: {isNextPlayerBlack ? "black" : "white"}</div>
             <div>Winner: white</div>
             <button onClick={changePlayer}>skip</button>
             <div className="board">{columns}</div>
