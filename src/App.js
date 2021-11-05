@@ -1,3 +1,4 @@
+// TODO: Disk直す！！！
 import React, { useState } from "react";
 import "./App.css";
 import {
@@ -14,10 +15,11 @@ function App() {
     let [count, setCount] = useState(0);
     const [pieceSet, setPieceSet] = useState({ ...defaultPieceSet });
     const [isNextPlayerBlack, setNextPlayerBlack] = useState(true);
+    const [winnerColor, setwinnerColor] = useState(null);
 
     // コマをおく
     const clickHandlar = (column, row) => {
-        if (!checkAbleToSetPeace(column, row)) {
+        if (!checkAbleToSetDisk(column, row)) {
             return;
         }
 
@@ -42,7 +44,7 @@ function App() {
         checkFinish();
     };
 
-    const checkAbleToSetPeace = (column, row) => {
+    const checkAbleToSetDisk = (column, row) => {
         // すでにコマが置かれていた場合新たにコマを置かない
         if (
             pieceSet.whiteCol[column]?.indexOf(row) > -1 ||
@@ -53,17 +55,17 @@ function App() {
         }
 
         for (let i = 0; i < directionsArray.length; i++) {
-            if (checkAnablePutPeace(column, row, directionsArray[i], 0)) {
-                putPeace(column, row);
+            if (checkAnablePutDisk(column, row, directionsArray[i], 0)) {
+                putDisk(column, row);
                 return true;
             }
         }
         return false;
     };
 
-    const checkAnablePutPeace = (column, row, incrementArray, index) => {
-        const PlayerPeaceSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
-        const OpponentPlayerPeaceSet = !isNextPlayerBlack
+    const checkAnablePutDisk = (column, row, incrementArray, index) => {
+        const PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
+        const OpponentPlayerDiskSet = !isNextPlayerBlack
             ? COLUMN.BLACK
             : COLUMN.WHITE;
 
@@ -71,24 +73,24 @@ function App() {
         const incrementedRow = row + incrementArray[1];
 
         if (
-            pieceSet[OpponentPlayerPeaceSet][incrementedColumn] &&
-            pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
+            pieceSet[OpponentPlayerDiskSet][incrementedColumn] &&
+            pieceSet[OpponentPlayerDiskSet][incrementedColumn].indexOf(
                 incrementedRow
             ) > -1
         ) {
-            return checkAnablePutPeace(
+            return checkAnablePutDisk(
                 incrementedColumn,
                 incrementedRow,
                 incrementArray,
                 index + 1
             );
         }
+        // TODO: 複雑なif文は書き出してしまうのが良い（foundMyDiskとか）
         if (
             index > 0 &&
-            pieceSet[PlayerPeaceSet][incrementedColumn] &&
-            pieceSet[PlayerPeaceSet][incrementedColumn].indexOf(
-                incrementedRow
-            ) > -1
+            pieceSet[PlayerDiskSet][incrementedColumn] &&
+            pieceSet[PlayerDiskSet][incrementedColumn].indexOf(incrementedRow) >
+                -1
         ) {
             return true;
         }
@@ -96,9 +98,9 @@ function App() {
     };
 
     // コマの変更
-    const changePeace = (column, row, incrementArray, index) => {
-        const PlayerPeaceSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
-        const OpponentPlayerPeaceSet = !isNextPlayerBlack
+    const changeDisk = (column, row, incrementArray, index) => {
+        const PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
+        const OpponentPlayerDiskSet = !isNextPlayerBlack
             ? COLUMN.BLACK
             : COLUMN.WHITE;
 
@@ -109,23 +111,23 @@ function App() {
         let newPieceSet = pieceSet;
 
         while (
-            pieceSet[OpponentPlayerPeaceSet][incrementedColumn]?.indexOf(
+            pieceSet[OpponentPlayerDiskSet][incrementedColumn]?.indexOf(
                 incrementedRow
             ) > -1
         ) {
             // ひっくり返すコマ
-            if (newPieceSet[PlayerPeaceSet][incrementedColumn]) {
-                newPieceSet[PlayerPeaceSet][incrementedColumn].push(
+            if (newPieceSet[PlayerDiskSet][incrementedColumn]) {
+                newPieceSet[PlayerDiskSet][incrementedColumn].push(
                     incrementedRow
                 );
             } else {
-                newPieceSet[PlayerPeaceSet][incrementedColumn] = [
+                newPieceSet[PlayerDiskSet][incrementedColumn] = [
                     incrementedRow,
                 ];
             }
             // ひっくり返されるコマ
-            newPieceSet[OpponentPlayerPeaceSet][incrementedColumn].splice(
-                pieceSet[OpponentPlayerPeaceSet][incrementedColumn].indexOf(
+            newPieceSet[OpponentPlayerDiskSet][incrementedColumn].splice(
+                pieceSet[OpponentPlayerDiskSet][incrementedColumn].indexOf(
                     incrementedRow
                 ),
                 1
@@ -138,25 +140,39 @@ function App() {
         //ERROR: はじめ白→黒で白にする際になってくれないのを直す→[-1,-1]のところが値が間違っていた
         setPieceSet({
             ...pieceSet,
-            [PlayerPeaceSet]: newPieceSet[PlayerPeaceSet],
-            [OpponentPlayerPeaceSet]: newPieceSet[OpponentPlayerPeaceSet],
+            [PlayerDiskSet]: newPieceSet[PlayerDiskSet],
+            [OpponentPlayerDiskSet]: newPieceSet[OpponentPlayerDiskSet],
         });
     };
 
-    const putPeace = (column, row) => {
+    const putDisk = (column, row) => {
         directionsArray.forEach((direction) => {
-            if (checkAnablePutPeace(column, row, direction, 0)) {
-                changePeace(column, row, direction, 0);
+            if (checkAnablePutDisk(column, row, direction, 0)) {
+                changeDisk(column, row, direction, 0);
             }
         });
     };
 
     const checkFinish = () => {
-        // TODO: check finish before to put piece to all square
-        // TODO: check which player is winner
-        if (count === squareAllNum) {
-            console.log("finish");
-            // TODO: winner check
+        // TODO:check change to finish before to put all piece
+        if (count === squareAllNum - 1 - 4) {
+            let blackPieceNumber = 0;
+            for (let key in pieceSet.blackCol) {
+                blackPieceNumber += pieceSet.blackCol[key].length;
+            }
+
+            let whitePieceNumber = 0;
+            for (let key in pieceSet.blackCol) {
+                whitePieceNumber += pieceSet.whiteCol[key].length;
+            }
+
+            if (blackPieceNumber === whitePieceNumber) {
+                setwinnerColor("draw");
+            } else if (blackPieceNumber > whitePieceNumber) {
+                setwinnerColor("black");
+            } else {
+                setwinnerColor("white");
+            }
         }
     };
 
@@ -179,7 +195,7 @@ function App() {
     return (
         <div className="App">
             <div>nextPlayer: {isNextPlayerBlack ? "black" : "white"}</div>
-            <div>Winner: white</div>
+            <div>Winner: {winnerColor}</div>
             <button onClick={changePlayer}>skip</button>
             <div className="board">{columns}</div>
         </div>
