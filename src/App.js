@@ -1,4 +1,3 @@
-// TODO: Disk直す！！！
 import React, { useState } from "react";
 import "./App.css";
 import {
@@ -17,9 +16,8 @@ function App() {
     const [isNextPlayerBlack, setNextPlayerBlack] = useState(true);
     const [winnerColor, setwinnerColor] = useState(null);
 
-    // コマをおく
-    const clickHandlar = (column, row) => {
-        if (!checkAbleToSetDisk(column, row)) {
+    const squareClickHandlar = (column, row) => {
+        if (!checkAbleToPutDisk(column, row)) {
             return;
         }
 
@@ -44,18 +42,21 @@ function App() {
         checkFinish();
     };
 
-    const checkAbleToSetDisk = (column, row) => {
-        // すでにコマが置かれていた場合新たにコマを置かない
-        if (
-            pieceSet.whiteCol[column]?.indexOf(row) > -1 ||
-            pieceSet.blackCol[column]?.indexOf(row) > -1
-        ) {
-            console.log("すでに置かれたマスです");
+    const checkAbleToPutDisk = (column, row) => {
+        if (isItAlreadyPlacedSquares(column, row)) {
+            alert("すでに置かれたマスです");
             return false;
         }
 
         for (let i = 0; i < directionsArray.length; i++) {
-            if (checkAnablePutDisk(column, row, directionsArray[i], 0)) {
+            if (
+                checkPossibilityToTurnOverOneDirection(
+                    column,
+                    row,
+                    directionsArray[i],
+                    0
+                )
+            ) {
                 putDisk(column, row);
                 return true;
             }
@@ -63,7 +64,19 @@ function App() {
         return false;
     };
 
-    const checkAnablePutDisk = (column, row, incrementArray, index) => {
+    const isItAlreadyPlacedSquares = (column, row) => {
+        return (
+            pieceSet.whiteCol[column]?.indexOf(row) > -1 ||
+            pieceSet.blackCol[column]?.indexOf(row) > -1
+        );
+    };
+
+    const checkPossibilityToTurnOverOneDirection = (
+        column,
+        row,
+        incrementArray,
+        index
+    ) => {
         const PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
         const OpponentPlayerDiskSet = !isNextPlayerBlack
             ? COLUMN.BLACK
@@ -73,39 +86,62 @@ function App() {
         const incrementedRow = row + incrementArray[1];
 
         if (
-            pieceSet[OpponentPlayerDiskSet][incrementedColumn] &&
-            pieceSet[OpponentPlayerDiskSet][incrementedColumn].indexOf(
+            foundOpponentDisk(
+                OpponentPlayerDiskSet,
+                incrementedColumn,
                 incrementedRow
-            ) > -1
+            )
         ) {
-            return checkAnablePutDisk(
+            return checkPossibilityToTurnOverOneDirection(
                 incrementedColumn,
                 incrementedRow,
                 incrementArray,
                 index + 1
             );
         }
-        // TODO: 複雑なif文は書き出してしまうのが良い（foundMyDiskとか）
-        if (
-            index > 0 &&
-            pieceSet[PlayerDiskSet][incrementedColumn] &&
-            pieceSet[PlayerDiskSet][incrementedColumn].indexOf(incrementedRow) >
-                -1
-        ) {
-            return true;
-        }
-        return false;
+
+        // 最終的に自分のコマがあるかチェック
+        return foundMyDisk(
+            index,
+            PlayerDiskSet,
+            incrementedColumn,
+            incrementedRow
+        );
     };
 
-    // コマの変更
-    const changeDisk = (column, row, incrementArray, index) => {
+    const foundOpponentDisk = (
+        OpponentPlayerDiskSet,
+        incrementedColumn,
+        incrementedRow
+    ) => {
+        return (
+            pieceSet[OpponentPlayerDiskSet][incrementedColumn]?.indexOf(
+                incrementedRow
+            ) > -1
+        );
+    };
+
+    const foundMyDisk = (
+        index,
+        PlayerDiskSet,
+        incrementedColumn,
+        incrementedRow
+    ) => {
+        return (
+            index > 0 &&
+            pieceSet[PlayerDiskSet][incrementedColumn]?.indexOf(
+                incrementedRow
+            ) > -1
+        );
+    };
+
+    const turnOverDisk = (column, row, incrementArray) => {
         const PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
         const OpponentPlayerDiskSet = !isNextPlayerBlack
             ? COLUMN.BLACK
             : COLUMN.WHITE;
 
-        // ERROR: 一個以上ひっくり返すときに一個しかひっくり返らない
-        //SOLVE: whileして繰り返す
+        // ERROR: 一個以上ひっくり返すときに一個しかひっくり返らない -> SOLVE: whileして繰り返す
         let incrementedColumn = column + incrementArray[0];
         let incrementedRow = row + incrementArray[1];
         let newPieceSet = pieceSet;
@@ -115,7 +151,7 @@ function App() {
                 incrementedRow
             ) > -1
         ) {
-            // ひっくり返すコマ
+            // 自分の増える持ちコマ
             if (newPieceSet[PlayerDiskSet][incrementedColumn]) {
                 newPieceSet[PlayerDiskSet][incrementedColumn].push(
                     incrementedRow
@@ -125,7 +161,8 @@ function App() {
                     incrementedRow,
                 ];
             }
-            // ひっくり返されるコマ
+
+            // 相手の減る持ちコマ
             newPieceSet[OpponentPlayerDiskSet][incrementedColumn].splice(
                 pieceSet[OpponentPlayerDiskSet][incrementedColumn].indexOf(
                     incrementedRow
@@ -147,8 +184,15 @@ function App() {
 
     const putDisk = (column, row) => {
         directionsArray.forEach((direction) => {
-            if (checkAnablePutDisk(column, row, direction, 0)) {
-                changeDisk(column, row, direction, 0);
+            if (
+                checkPossibilityToTurnOverOneDirection(
+                    column,
+                    row,
+                    direction,
+                    0
+                )
+            ) {
+                turnOverDisk(column, row, direction, 0);
             }
         });
     };
@@ -187,7 +231,7 @@ function App() {
                 key={i}
                 columnNum={i}
                 pieceSet={pieceSet}
-                clickHandlar={clickHandlar}
+                squareClickHandlar={squareClickHandlar}
             />
         );
     }
@@ -215,7 +259,7 @@ class Column extends React.Component {
                     columnNum={this.props.columnNum}
                     rowNum={i}
                     pieceSet={this.props.pieceSet}
-                    clickHandlar={this.props.clickHandlar}
+                    squareClickHandlar={this.props.squareClickHandlar}
                 />
             );
         }
@@ -227,16 +271,10 @@ class Column extends React.Component {
 // 横1マス
 class Square extends React.Component {
     checkFirstSet(column, row) {
-        if (
-            this.props.pieceSet.blackCol[column] &&
-            this.props.pieceSet.blackCol[column].indexOf(row) > -1
-        ) {
+        if (this.props.pieceSet.blackCol[column]?.indexOf(row) > -1) {
             return <Piece color="black" />;
         }
-        if (
-            this.props.pieceSet.whiteCol[column] &&
-            this.props.pieceSet.whiteCol[column].indexOf(row) > -1
-        ) {
+        if (this.props.pieceSet.whiteCol[column]?.indexOf(row) > -1) {
             return <Piece color="white" />;
         }
     }
@@ -246,7 +284,7 @@ class Square extends React.Component {
             <div
                 className="square"
                 onClick={() => {
-                    this.props.clickHandlar(
+                    this.props.squareClickHandlar(
                         this.props.columnNum,
                         this.props.rowNum
                     );
