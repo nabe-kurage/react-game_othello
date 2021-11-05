@@ -4,7 +4,7 @@ import {
     squareNum,
     directionsArray,
     squareAllNum,
-    defaultPieceSet,
+    defaultDiskSet,
     COLUMN,
 } from "./constData.js";
 
@@ -12,7 +12,7 @@ import {
 // class App extends .. でもできる。その場合constructorやthis.stateといった感じでobujectを定義する形になる
 function App() {
     let [count, setCount] = useState(0);
-    const [pieceSet, setPieceSet] = useState({ ...defaultPieceSet });
+    const [diskSet, setDiskSet] = useState({ ...defaultDiskSet });
     const [isNextPlayerBlack, setNextPlayerBlack] = useState(true);
     const [winnerColor, setwinnerColor] = useState(null);
 
@@ -21,21 +21,21 @@ function App() {
             return;
         }
 
-        let newPieceSet, colName;
+        let newDiskSet, colName;
         if (isNextPlayerBlack) {
             colName = COLUMN.BLACK;
-            newPieceSet = pieceSet.blackCol;
+            newDiskSet = diskSet.blackCol;
         } else {
             colName = COLUMN.WHITE;
-            newPieceSet = pieceSet.whiteCol;
+            newDiskSet = diskSet.whiteCol;
         }
 
-        if (newPieceSet[column]) {
-            newPieceSet[column].push(row);
+        if (newDiskSet[column]) {
+            newDiskSet[column].push(row);
         } else {
-            newPieceSet[column] = [row];
+            newDiskSet[column] = [row];
         }
-        setPieceSet({ ...pieceSet, [colName]: newPieceSet });
+        setDiskSet({ ...diskSet, [colName]: newDiskSet });
         changePlayer();
 
         setCount(count + 1);
@@ -66,8 +66,8 @@ function App() {
 
     const isItAlreadyPlacedSquares = (column, row) => {
         return (
-            pieceSet.whiteCol[column]?.indexOf(row) > -1 ||
-            pieceSet.blackCol[column]?.indexOf(row) > -1
+            diskSet.whiteCol[column]?.indexOf(row) > -1 ||
+            diskSet.blackCol[column]?.indexOf(row) > -1
         );
     };
 
@@ -115,7 +115,7 @@ function App() {
         incrementedRow
     ) => {
         return (
-            pieceSet[OpponentPlayerDiskSet][incrementedColumn]?.indexOf(
+            diskSet[OpponentPlayerDiskSet][incrementedColumn]?.indexOf(
                 incrementedRow
             ) > -1
         );
@@ -129,9 +129,8 @@ function App() {
     ) => {
         return (
             index > 0 &&
-            pieceSet[PlayerDiskSet][incrementedColumn]?.indexOf(
-                incrementedRow
-            ) > -1
+            diskSet[PlayerDiskSet][incrementedColumn]?.indexOf(incrementedRow) >
+                -1
         );
     };
 
@@ -144,27 +143,25 @@ function App() {
         // ERROR: 一個以上ひっくり返すときに一個しかひっくり返らない -> SOLVE: whileして繰り返す
         let incrementedColumn = column + incrementArray[0];
         let incrementedRow = row + incrementArray[1];
-        let newPieceSet = pieceSet;
+        let newDiskSet = diskSet;
 
         while (
-            pieceSet[OpponentPlayerDiskSet][incrementedColumn]?.indexOf(
+            diskSet[OpponentPlayerDiskSet][incrementedColumn]?.indexOf(
                 incrementedRow
             ) > -1
         ) {
             // 自分の増える持ちコマ
-            if (newPieceSet[PlayerDiskSet][incrementedColumn]) {
-                newPieceSet[PlayerDiskSet][incrementedColumn].push(
+            if (newDiskSet[PlayerDiskSet][incrementedColumn]) {
+                newDiskSet[PlayerDiskSet][incrementedColumn].push(
                     incrementedRow
                 );
             } else {
-                newPieceSet[PlayerDiskSet][incrementedColumn] = [
-                    incrementedRow,
-                ];
+                newDiskSet[PlayerDiskSet][incrementedColumn] = [incrementedRow];
             }
 
             // 相手の減る持ちコマ
-            newPieceSet[OpponentPlayerDiskSet][incrementedColumn].splice(
-                pieceSet[OpponentPlayerDiskSet][incrementedColumn].indexOf(
+            newDiskSet[OpponentPlayerDiskSet][incrementedColumn].splice(
+                diskSet[OpponentPlayerDiskSet][incrementedColumn].indexOf(
                     incrementedRow
                 ),
                 1
@@ -175,10 +172,10 @@ function App() {
         }
 
         //ERROR: はじめ白→黒で白にする際になってくれないのを直す→[-1,-1]のところが値が間違っていた
-        setPieceSet({
-            ...pieceSet,
-            [PlayerDiskSet]: newPieceSet[PlayerDiskSet],
-            [OpponentPlayerDiskSet]: newPieceSet[OpponentPlayerDiskSet],
+        setDiskSet({
+            ...diskSet,
+            [PlayerDiskSet]: newDiskSet[PlayerDiskSet],
+            [OpponentPlayerDiskSet]: newDiskSet[OpponentPlayerDiskSet],
         });
     };
 
@@ -198,21 +195,21 @@ function App() {
     };
 
     const checkFinish = () => {
-        // TODO:check change to finish before to put all piece
+        // TODO:check change to finish before to put all disk
         if (count === squareAllNum - 1 - 4) {
-            let blackPieceNumber = 0;
-            for (let key in pieceSet.blackCol) {
-                blackPieceNumber += pieceSet.blackCol[key].length;
+            let blackDiskNumber = 0;
+            for (let key in diskSet.blackCol) {
+                blackDiskNumber += diskSet.blackCol[key].length;
             }
 
-            let whitePieceNumber = 0;
-            for (let key in pieceSet.blackCol) {
-                whitePieceNumber += pieceSet.whiteCol[key].length;
+            let whiteDiskNumber = 0;
+            for (let key in diskSet.blackCol) {
+                whiteDiskNumber += diskSet.whiteCol[key].length;
             }
 
-            if (blackPieceNumber === whitePieceNumber) {
+            if (blackDiskNumber === whiteDiskNumber) {
                 setwinnerColor("draw");
-            } else if (blackPieceNumber > whitePieceNumber) {
+            } else if (blackDiskNumber > whiteDiskNumber) {
                 setwinnerColor("black");
             } else {
                 setwinnerColor("white");
@@ -230,7 +227,7 @@ function App() {
             <Column
                 key={i}
                 columnNum={i}
-                pieceSet={pieceSet}
+                diskSet={diskSet}
                 squareClickHandlar={squareClickHandlar}
             />
         );
@@ -258,7 +255,7 @@ class Column extends React.Component {
                     key={i}
                     columnNum={this.props.columnNum}
                     rowNum={i}
-                    pieceSet={this.props.pieceSet}
+                    diskSet={this.props.diskSet}
                     squareClickHandlar={this.props.squareClickHandlar}
                 />
             );
@@ -271,11 +268,11 @@ class Column extends React.Component {
 // 横1マス
 class Square extends React.Component {
     checkFirstSet(column, row) {
-        if (this.props.pieceSet.blackCol[column]?.indexOf(row) > -1) {
-            return <Piece color="black" />;
+        if (this.props.diskSet.blackCol[column]?.indexOf(row) > -1) {
+            return <Disk color="black" />;
         }
-        if (this.props.pieceSet.whiteCol[column]?.indexOf(row) > -1) {
-            return <Piece color="white" />;
+        if (this.props.diskSet.whiteCol[column]?.indexOf(row) > -1) {
+            return <Disk color="white" />;
         }
     }
 
@@ -299,12 +296,12 @@ class Square extends React.Component {
 }
 
 // コマ
-class Piece extends React.Component {
+class Disk extends React.Component {
     render() {
         if (this.props.color === "black") {
-            return <div className="piece piece--black"></div>;
+            return <div className="disk disk--black"></div>;
         } else {
-            return <div className="piece piece--white"></div>;
+            return <div className="disk disk--white"></div>;
         }
     }
 }

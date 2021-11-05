@@ -16,7 +16,7 @@ export const COLUMN = {
     WHITE: "whiteCol",
 };
 
-export const defaultPieceSet = {
+export const defaultDiskSet = {
     [COLUMN.WHITE]: {
         3: [3],
         4: [4],

@@ -50,14 +50,14 @@
     display: flex;
 }
 
-.piece {
+.disk {
     width: 75%;
     height: 75%;
     border-radius: 50%;
 }
-.piece--black {
+.disk--black {
     background: black;
 }
-.piece--white {
+.disk--white {
     background: white;
 }
