@@ -12,12 +12,13 @@ import {
 // class App extends .. でもできる。その場合constructorやthis.stateといった感じでobujectを定義する形になる
 function App() {
     let [count, setCount] = useState(0);
+    let [skipCounter, setSkipCounter] = useState(0);
     const [diskSet, setDiskSet] = useState({ ...defaultDiskSet });
     const [isNextPlayerBlack, setNextPlayerBlack] = useState(true);
     const [winnerColor, setwinnerColor] = useState(null);
 
     const squareClickHandlar = (column, row) => {
-        if (!checkAbleToPutDisk(column, row)) {
+        if (winnerColor || !checkAbleToPutDisk(column, row)) {
             return;
         }
 
@@ -39,6 +40,8 @@ function App() {
         changePlayer();
 
         setCount(count + 1);
+        setSkipCounter(0);
+
         checkFinish();
     };
 
@@ -195,30 +198,43 @@ function App() {
     };
 
     const checkFinish = () => {
-        // TODO:check change to finish before to put all disk
         if (count === squareAllNum - 1 - 4) {
-            let blackDiskNumber = 0;
-            for (let key in diskSet.blackCol) {
-                blackDiskNumber += diskSet.blackCol[key].length;
-            }
+            judgeWinner();
+        }
+    };
 
-            let whiteDiskNumber = 0;
-            for (let key in diskSet.blackCol) {
-                whiteDiskNumber += diskSet.whiteCol[key].length;
-            }
+    const judgeWinner = () => {
+        let blackDiskNumber = 0;
+        for (let key in diskSet.blackCol) {
+            blackDiskNumber += diskSet.blackCol[key].length;
+        }
 
-            if (blackDiskNumber === whiteDiskNumber) {
-                setwinnerColor("draw");
-            } else if (blackDiskNumber > whiteDiskNumber) {
-                setwinnerColor("black");
-            } else {
-                setwinnerColor("white");
-            }
+        let whiteDiskNumber = 0;
+        for (let key in diskSet.whiteCol) {
+            whiteDiskNumber += diskSet.whiteCol[key].length;
+        }
+
+        if (blackDiskNumber === whiteDiskNumber) {
+            setwinnerColor("draw");
+        } else if (blackDiskNumber > whiteDiskNumber) {
+            setwinnerColor("black");
+        } else {
+            setwinnerColor("white");
         }
     };
 
     const changePlayer = () => {
         setNextPlayerBlack((isNextPlayerBlack) => !isNextPlayerBlack);
+    };
+
+    const skipButtonHandler = () => {
+        if (skipCounter > 0) {
+            judgeWinner();
+            return;
+        }
+
+        setSkipCounter(skipCounter + 1);
+        changePlayer();
     };
 
     const columns = [];
@@ -237,7 +253,7 @@ function App() {
         <div className="App">
             <div>nextPlayer: {isNextPlayerBlack ? "black" : "white"}</div>
             <div>Winner: {winnerColor}</div>
-            <button onClick={changePlayer}>skip</button>
+            <button onClick={skipButtonHandler}>skip</button>
             <div className="board">{columns}</div>
         </div>
     );
