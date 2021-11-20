@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./App.css";
+import useSound from "use-sound";
 import {
     squareNum,
     directionsArray,
@@ -253,7 +254,9 @@ function App() {
         <div className="App">
             <div>nextPlayer: {isNextPlayerBlack ? "black" : "white"}</div>
             <div>Winner: {winnerColor}</div>
-            <button onClick={skipButtonHandler}>skip</button>
+            <button onClick={skipButtonHandler} className="skipButton">
+                skip
+            </button>
             <div className="board">{columns}</div>
         </div>
     );
