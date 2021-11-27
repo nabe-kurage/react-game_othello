@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "./App.css";
 import useSound from "use-sound";
+import hover from "./sound/hover.mp3";
+import click from "./sound/click.mp3";
 import {
     squareNum,
     directionsArray,
@@ -17,7 +19,12 @@ function App() {
     const [diskSet, setDiskSet] = useState({ ...defaultDiskSet });
     const [isNextPlayerBlack, setNextPlayerBlack] = useState(true);
     const [winnerColor, setwinnerColor] = useState(null);
+    const [hoverSoundPlay, { stop }] = useSound(hover, {
+        playbackRate: 1.5,
+        volume: 0.3,
+    });
 
+    const [clickSoundPlay] = useSound(click);
     const squareClickHandlar = (column, row) => {
         if (winnerColor || !checkAbleToPutDisk(column, row)) {
             return;
@@ -246,6 +253,9 @@ function App() {
                 columnNum={i}
                 diskSet={diskSet}
                 squareClickHandlar={squareClickHandlar}
+                hoverSoundLoadHandlar={hoverSoundPlay}
+                hoverSoundStopHandlar={stop}
+                clickSoundLoadHandlar={clickSoundPlay}
             />
         );
     }
@@ -276,6 +286,9 @@ class Column extends React.Component {
                     rowNum={i}
                     diskSet={this.props.diskSet}
                     squareClickHandlar={this.props.squareClickHandlar}
+                    hoverSoundLoadHandlar={this.props.hoverSoundLoadHandlar}
+                    hoverSoundStopHandlar={this.props.hoverSoundStopHandlar}
+                    clickSoundLoadHandlar={this.props.clickSoundLoadHandlar}
                 />
             );
         }
@@ -300,10 +313,15 @@ class Square extends React.Component {
             <div
                 className="square"
                 onClick={() => {
+                    this.props.hoverSoundLoadHandlar();
                     this.props.squareClickHandlar(
                         this.props.columnNum,
                         this.props.rowNum
                     );
+                }}
+                onMouseOver={() => {
+                    this.props.hoverSoundStopHandlar();
+                    this.props.hoverSoundLoadHandlar();
                 }}
                 data-column={this.props.columnNum}
                 data-row={this.props.rowNum}
