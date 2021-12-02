@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./App.css";
 import useSound from "use-sound";
-import hover from "./sound/hover2.mp3";
+import hover from "./sound/hover4.mp3";
 import click from "./sound/click.mp3";
 import {
     squareNum,
@@ -21,7 +21,7 @@ function App() {
     const [winnerColor, setwinnerColor] = useState(null);
     const [hoverSoundPlay, { stop }] = useSound(hover, {
         playbackRate: 1.5,
-        volume: 0.3,
+        volume: 0.1,
     });
 
     const [clickSoundPlay] = useSound(click);

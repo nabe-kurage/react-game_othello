@@ -36,6 +36,7 @@
     width: 640px;
     height: 640px;
     border-radius: 40px;
+    margin-top: 32px;
 }
 
 .square {
@@ -48,6 +49,7 @@
     justify-content: space-around;
     display: flex;
     cursor: pointer;
+    position: relative;
 }
 
 .column:first-child .square {
@@ -64,6 +66,38 @@
 
 .column .square:last-child {
     border-bottom: transparent;
+}
+
+.column:first-child .square:first-child {
+    border-top-left-radius: 36px;
+}
+
+.column:last-child .square:first-child {
+    border-top-right-radius: 36px;
+}
+
+.column:first-child .square:last-child {
+    border-bottom-left-radius: 36px;
+}
+
+.column:last-child .square:last-child {
+    border-bottom-right-radius: 36px;
+}
+
+.column:nth-of-type(2) .square:nth-of-type(2):after,
+.column:nth-of-type(2) .square:nth-of-type(6):after,
+.column:nth-of-type(6) .square:nth-of-type(2):after,
+.column:nth-of-type(6) .square:nth-of-type(6):after {
+    background: #9ddbb1;
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 10px;
+    height: 10px;
+    transform: translate(50%, 50%);
+    display: inline-block;
+    border-radius: 50%;
 }
 
 .square:hover {
