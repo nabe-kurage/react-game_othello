@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./App.css";
 import useSound from "use-sound";
-import hover from "./sound/hover.mp3";
+import hover from "./sound/hover2.mp3";
 import click from "./sound/click.mp3";
 import {
     squareNum,
