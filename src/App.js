@@ -10,6 +10,9 @@ import {
     defaultDiskSet,
     COLUMN,
 } from "./constData.js";
+import { GreedyPlayer } from "./othelloAI";
+
+const othelloAi = new GreedyPlayer();
 
 // column = |||, row = 三
 // class App extends .. でもできる。その場合constructorやthis.stateといった感じでobujectを定義する形になる
@@ -51,6 +54,14 @@ function App() {
         setSkipCounter(0);
 
         checkFinish();
+        aiCheck();
+    };
+
+    const aiCheck = () => {
+        // TODO: check next ai turn
+        if (!isNextPlayerBlack) {
+            console.log(othelloAi.computeBestMove(defaultDiskSet, false));
+        }
     };
 
     const checkAbleToPutDisk = (column, row) => {
