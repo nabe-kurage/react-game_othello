@@ -100,6 +100,72 @@
     border-radius: 50%;
 }
 
+.column:first-child .square:before {
+    content: "1";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    left: -26px;
+    height: 20px;
+    font-size: 20px;
+}
+
+.column:first-child .square:nth-child(2):before {
+    content: "2";
+}
+.column:first-child .square:nth-child(3):before {
+    content: "3";
+}
+.column:first-child .square:nth-child(4):before {
+    content: "4";
+}
+.column:first-child .square:nth-child(5):before {
+    content: "5";
+}
+.column:first-child .square:nth-child(6):before {
+    content: "6";
+}
+.column:first-child .square:nth-child(7):before {
+    content: "7";
+}
+.column:first-child .square:nth-child(8):before {
+    content: "8";
+}
+
+.square:first-child:after {
+    content: "A";
+    position: absolute;
+    top: -30px;
+    margin: auto;
+    left: 0;
+    right: 0;
+    width: 20px;
+    font-size: 20px;
+}
+
+.column:nth-child(2) .square:first-child:after {
+    content: "B";
+}
+.column:nth-child(3) .square:first-child:after {
+    content: "C";
+}
+.column:nth-child(4) .square:first-child:after {
+    content: "D";
+}
+.column:nth-child(5) .square:first-child:after {
+    content: "E";
+}
+.column:nth-child(6) .square:first-child:after {
+    content: "F";
+}
+.column:nth-child(7) .square:first-child:after {
+    content: "G";
+}
+.column:nth-child(8) .square:first-child:after {
+    content: "H";
+}
+
 .square:hover {
     background-color: rgba(225, 225, 225, 0.2);
 }
