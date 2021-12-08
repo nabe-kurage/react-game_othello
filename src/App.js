@@ -27,6 +27,7 @@ function App() {
         volume: 0.1,
     });
 
+    // TODO: add stop sound
     const [clickSoundPlay] = useSound(click);
     const squareClickHandlar = (column, row) => {
         if (winnerColor || !checkAbleToPutDisk(column, row)) {
@@ -324,6 +325,7 @@ class Square extends React.Component {
             <div
                 className="square"
                 onClick={() => {
+                    this.props.hoverSoundStopHandlar();
                     this.props.hoverSoundLoadHandlar();
                     this.props.squareClickHandlar(
                         this.props.columnNum,
