@@ -15,6 +15,8 @@ import {
 // class App extends .. でもできる。その場合constructorやthis.stateといった感じでobujectを定義する形になる
 function App() {
     let [count, setCount] = useState(0);
+    let [blackDisksCount, setBlackDisksCount] = useState(2);
+    let [whiteDisksCount, setWhiteDisksCount] = useState(2);
     let [skipCounter, setSkipCounter] = useState(0);
     const [diskSet, setDiskSet] = useState({ ...defaultDiskSet });
     const [isNextPlayerBlack, setNextPlayerBlack] = useState(true);
@@ -50,6 +52,7 @@ function App() {
         setCount(count + 1);
         setSkipCounter(0);
 
+        countDisks();
         checkFinish();
     };
 
@@ -205,6 +208,20 @@ function App() {
         });
     };
 
+    const countDisks = () => {
+        let currentBlackSum = 0;
+        for (const i in diskSet.blackCol) {
+            currentBlackSum += diskSet.blackCol[i].length;
+        }
+        setBlackDisksCount(currentBlackSum);
+
+        let currentWhiteSum = 0;
+        for (const i in diskSet.whiteCol) {
+            currentWhiteSum += diskSet.whiteCol[i].length;
+        }
+        setWhiteDisksCount(currentWhiteSum);
+    };
+
     const checkFinish = () => {
         if (count === squareAllNum - 1 - 4) {
             judgeWinner();
@@ -262,11 +279,35 @@ function App() {
 
     return (
         <div className="App">
-            <div>nextPlayer: {isNextPlayerBlack ? "black" : "white"}</div>
-            <div>Winner: {winnerColor}</div>
-            <button onClick={skipButtonHandler} className="skipButton">
-                skip
-            </button>
+            <h1 className="title">Othello</h1>
+            <div className="header">
+                <div className="headerPlayerInfo">
+                    <img src="" alt="" className="headerPlayerImg" />
+                    <div className="headerPlayerInfoName">Player1</div>
+                    <div>color:Black</div>
+                    <div className="headerPlayerInfoCount">
+                        Count:{blackDisksCount}
+                    </div>
+                </div>
+                <div className="headerInfo">
+                    <div>
+                        nextPlayer: {isNextPlayerBlack ? "black" : "white"}
+                    </div>
+                    <div>Winner: {winnerColor}</div>
+                    <button onClick={skipButtonHandler} className="skipButton">
+                        skip
+                    </button>
+                </div>
+                <div className="headerPlayerInfo">
+                    <img src="" alt="" className="headerPlayerImg" />
+                    <div className="headerPlayerInfoName">Player2</div>
+                    <div>color:White</div>
+                    <div className="headerPlayerInfoCount">
+                        Count:{whiteDisksCount}
+                    </div>
+                </div>
+            </div>
+
             <div className="board">{columns}</div>
         </div>
     );
