@@ -288,12 +288,11 @@ function App() {
                     <div className="headerPlayerInfoCount">
                         Count:{blackDisksCount}
                     </div>
+                    {/* TODO: adjust draw */}
+                    {isNextPlayerBlack ? "my turn" : ""}
+                    {winnerColor}
                 </div>
                 <div className="headerInfo">
-                    <div>
-                        nextPlayer: {isNextPlayerBlack ? "black" : "white"}
-                    </div>
-                    <div>Winner: {winnerColor}</div>
                     <button onClick={skipButtonHandler} className="skipButton">
                         skip
                     </button>
@@ -305,6 +304,8 @@ function App() {
                     <div className="headerPlayerInfoCount">
                         Count:{whiteDisksCount}
                     </div>
+                    {isNextPlayerBlack ? "" : "my turn"}
+                    {winnerColor}
                 </div>
             </div>
 
