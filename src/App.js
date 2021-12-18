@@ -282,7 +282,11 @@ function App() {
             <h1 className="title">Othello</h1>
             <div className="header">
                 <div className="headerPlayerInfo">
-                    <img src="" alt="" className="headerPlayerImg" />
+                    <img
+                        src={`${process.env.PUBLIC_URL}/othello-character.svg`}
+                        alt=""
+                        className="headerPlayerImg"
+                    />
                     <div className="headerPlayerInfoName">Player1</div>
                     <div>color:Black</div>
                     <div className="headerPlayerInfoCount">
@@ -298,7 +302,11 @@ function App() {
                     </button>
                 </div>
                 <div className="headerPlayerInfo">
-                    <img src="" alt="" className="headerPlayerImg" />
+                    <img
+                        src={`${process.env.PUBLIC_URL}/othello-character.svg`}
+                        alt=""
+                        className="headerPlayerImg"
+                    />
                     <div className="headerPlayerInfoName">Player2</div>
                     <div>color:White</div>
                     <div className="headerPlayerInfoCount">
