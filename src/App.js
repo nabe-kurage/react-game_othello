@@ -298,7 +298,9 @@ function App() {
                     <div className="headerPlayerInfoName">Player1</div>
                     <div>
                         color:
-                        <span className="headerPlayerInfoBlackSquare"> ●</span>
+                        <span className="headerPlayerInfoBlackSquare">
+                            &nbsp;●
+                        </span>
                     </div>
                     <div className="headerPlayerInfoCount">
                         Count:{blackDisksCount}
@@ -318,7 +320,12 @@ function App() {
                         className="headerPlayerImg"
                     />
                     <div className="headerPlayerInfoName">Player2</div>
-                    <div>color: ●</div>
+                    <div>
+                        color:
+                        <span className="headerPlayerInfoWhiteSquare">
+                            &nbsp;●
+                        </span>
+                    </div>
                     <div className="headerPlayerInfoCount">
                         Count:{whiteDisksCount}
                     </div>
