@@ -277,23 +277,33 @@ function App() {
         );
     }
 
+    const blackPlayerInfoClassName = isNextPlayerBlack
+        ? "headerPlayerInfo headerPlayerInfo--myTurn"
+        : "headerPlayerInfo";
+
+    const whitePlayerInfoClassName = isNextPlayerBlack
+        ? "headerPlayerInfo"
+        : "headerPlayerInfo headerPlayerInfo--myTurn";
+
     return (
         <div className="App">
             <h1 className="title">Othello</h1>
             <div className="header">
-                <div className="headerPlayerInfo">
+                <div className={blackPlayerInfoClassName}>
                     <img
                         src={`${process.env.PUBLIC_URL}/othello-character.svg`}
                         alt=""
                         className="headerPlayerImg"
                     />
                     <div className="headerPlayerInfoName">Player1</div>
-                    <div>color:Black</div>
+                    <div>
+                        color:
+                        <span className="headerPlayerInfoBlackSquare"> ●</span>
+                    </div>
                     <div className="headerPlayerInfoCount">
                         Count:{blackDisksCount}
                     </div>
                     {/* TODO: adjust draw */}
-                    {isNextPlayerBlack ? "my turn" : ""}
                     {winnerColor}
                 </div>
                 <div className="headerInfo">
@@ -301,18 +311,17 @@ function App() {
                         skip
                     </button>
                 </div>
-                <div className="headerPlayerInfo">
+                <div className={whitePlayerInfoClassName}>
                     <img
                         src={`${process.env.PUBLIC_URL}/othello-character.svg`}
                         alt=""
                         className="headerPlayerImg"
                     />
                     <div className="headerPlayerInfoName">Player2</div>
-                    <div>color:White</div>
+                    <div>color: ●</div>
                     <div className="headerPlayerInfoCount">
                         Count:{whiteDisksCount}
                     </div>
-                    {isNextPlayerBlack ? "" : "my turn"}
                     {winnerColor}
                 </div>
             </div>
