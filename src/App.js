@@ -84,7 +84,7 @@ function App() {
 
             directionsArray.forEach((direction) => {
                 if (
-                    checkPossibilityToTurnOverOneDirectionForAi(
+                    checkPossibilityToTurnOverOneDirection(
                         aiDesc.column,
                         aiDesc.row,
                         direction,
@@ -92,7 +92,7 @@ function App() {
                         true
                     )
                 ) {
-                    turnOverDiskForAi(aiDesc.column, aiDesc.row, direction, 0);
+                    turnOverDisk(aiDesc.column, aiDesc.row, direction, true);
                 }
             });
 
@@ -116,7 +116,8 @@ function App() {
                     column,
                     row,
                     directionsArray[i],
-                    0
+                    0,
+                    false
                 )
             ) {
                 putDisk(column, row);
@@ -137,12 +138,21 @@ function App() {
         column,
         row,
         incrementArray,
-        index
+        index,
+        isAi
     ) => {
-        const PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
-        const OpponentPlayerDiskSet = !isNextPlayerBlack
-            ? COLUMN.BLACK
-            : COLUMN.WHITE;
+        let PlayerDiskSet, OpponentPlayerDiskSet;
+        if (isAi) {
+            PlayerDiskSet = isNextPlayerBlack ? COLUMN.WHITE : COLUMN.BLACK;
+            OpponentPlayerDiskSet = !isNextPlayerBlack
+                ? COLUMN.WHITE
+                : COLUMN.BLACK;
+        } else {
+            PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
+            OpponentPlayerDiskSet = !isNextPlayerBlack
+                ? COLUMN.BLACK
+                : COLUMN.WHITE;
+        }
 
         const incrementedColumn = column + incrementArray[0];
         const incrementedRow = row + incrementArray[1];
@@ -154,49 +164,29 @@ function App() {
                 incrementedRow
             )
         ) {
-            return checkPossibilityToTurnOverOneDirection(
-                incrementedColumn,
-                incrementedRow,
-                incrementArray,
-                index + 1
-            );
+            if (isAi) {
+                return checkPossibilityToTurnOverOneDirection(
+                    incrementedColumn,
+                    incrementedRow,
+                    incrementArray,
+                    index + 1,
+                    true
+                );
+            } else {
+                return checkPossibilityToTurnOverOneDirection(
+                    incrementedColumn,
+                    incrementedRow,
+                    incrementArray,
+                    index + 1,
+                    false
+                );
+            }
         }
 
         // 最終的に自分のコマがあるかチェック
         return foundMyDisk(
             index,
             PlayerDiskSet,
-            incrementedColumn,
-            incrementedRow
-        );
-    };
-
-    const checkPossibilityToTurnOverOneDirectionForAi = (
-        column,
-        row,
-        incrementArray,
-        index,
-        isAi
-    ) => {
-        const incrementedColumn = column + incrementArray[0];
-        const incrementedRow = row + incrementArray[1];
-
-        if (
-            foundOpponentDisk(COLUMN.BLACK, incrementedColumn, incrementedRow)
-        ) {
-            return checkPossibilityToTurnOverOneDirectionForAi(
-                incrementedColumn,
-                incrementedRow,
-                incrementArray,
-                index + 1,
-                true
-            );
-        }
-
-        // 最終的に自分のコマがあるかチェック
-        return foundMyDisk(
-            index,
-            COLUMN.WHITE,
             incrementedColumn,
             incrementedRow
         );
@@ -227,54 +217,19 @@ function App() {
         );
     };
 
-    const turnOverDisk = (column, row, incrementArray) => {
-        const PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
-        const OpponentPlayerDiskSet = !isNextPlayerBlack
-            ? COLUMN.BLACK
-            : COLUMN.WHITE;
-
-        // ERROR: 一個以上ひっくり返すときに一個しかひっくり返らない -> SOLVE: whileして繰り返す
-        let incrementedColumn = column + incrementArray[0];
-        let incrementedRow = row + incrementArray[1];
-        let newDiskSet = diskSet;
-
-        while (
-            diskSet[OpponentPlayerDiskSet][incrementedColumn]?.indexOf(
-                incrementedRow
-            ) > -1
-        ) {
-            // 自分の増える持ちコマ
-            if (newDiskSet[PlayerDiskSet][incrementedColumn]) {
-                newDiskSet[PlayerDiskSet][incrementedColumn].push(
-                    incrementedRow
-                );
-            } else {
-                newDiskSet[PlayerDiskSet][incrementedColumn] = [incrementedRow];
-            }
-
-            // 相手の減る持ちコマ
-            newDiskSet[OpponentPlayerDiskSet][incrementedColumn].splice(
-                diskSet[OpponentPlayerDiskSet][incrementedColumn].indexOf(
-                    incrementedRow
-                ),
-                1
-            );
-
-            incrementedColumn = incrementedColumn + incrementArray[0];
-            incrementedRow = incrementedRow + incrementArray[1];
+    const turnOverDisk = (column, row, incrementArray, isAi) => {
+        let PlayerDiskSet, OpponentPlayerDiskSet;
+        if (isAi) {
+            PlayerDiskSet = isNextPlayerBlack ? COLUMN.WHITE : COLUMN.BLACK;
+            OpponentPlayerDiskSet = !isNextPlayerBlack
+                ? COLUMN.WHITE
+                : COLUMN.BLACK;
+        } else {
+            PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
+            OpponentPlayerDiskSet = !isNextPlayerBlack
+                ? COLUMN.BLACK
+                : COLUMN.WHITE;
         }
-
-        //ERROR: はじめ白→黒で白にする際になってくれないのを直す→[-1,-1]のところが値が間違っていた
-        setDiskSet({
-            ...diskSet,
-            [PlayerDiskSet]: newDiskSet[PlayerDiskSet],
-            [OpponentPlayerDiskSet]: newDiskSet[OpponentPlayerDiskSet],
-        });
-    };
-
-    const turnOverDiskForAi = (column, row, incrementArray) => {
-        const PlayerDiskSet = COLUMN.WHITE;
-        const OpponentPlayerDiskSet = COLUMN.BLACK;
 
         // ERROR: 一個以上ひっくり返すときに一個しかひっくり返らない -> SOLVE: whileして繰り返す
         let incrementedColumn = column + incrementArray[0];
@@ -322,10 +277,11 @@ function App() {
                     column,
                     row,
                     direction,
-                    0
+                    0,
+                    false
                 )
             ) {
-                turnOverDisk(column, row, direction, 0);
+                turnOverDisk(column, row, direction, false);
             }
         });
     };
