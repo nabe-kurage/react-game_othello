@@ -28,6 +28,7 @@ function App() {
         playbackRate: 1.5,
         volume: 0.1,
     });
+    const [aiColor, setAiColor] = useState(COLUMN.WHITE);
 
     // TODO: add stop sound
     const [clickSoundPlay] = useSound(click);
@@ -60,7 +61,7 @@ function App() {
         countDisks();
         checkFinish();
         // TODO: AI使わない場合は分岐を追加
-        if (true) {
+        if (aiColor.length > 0) {
             setTimeout(() => {
                 aiCheck();
             }, 1500);
@@ -365,6 +366,15 @@ function App() {
         ? "headerPlayerInfo"
         : "headerPlayerInfo headerPlayerInfo--myTurn";
 
+    const playerName = (index, squareColor) => {
+        if (aiColor === COLUMN.WHITE && squareColor === COLUMN.WHITE) {
+            return `Computer`;
+        } else if (aiColor === COLUMN.BLACK && squareColor === COLUMN.BLACK) {
+            return `Computer`;
+        }
+        return `Player ${index}`;
+    };
+
     return (
         <div className="App">
             <h1 className="title">Othello</h1>
@@ -375,7 +385,9 @@ function App() {
                         alt=""
                         className="headerPlayerImg"
                     />
-                    <div className="headerPlayerInfoName">Player1</div>
+                    <div className="headerPlayerInfoName">
+                        {playerName(1, COLUMN.BLACK)}
+                    </div>
                     <div>
                         color:
                         <span className="headerPlayerInfoBlackSquare">
@@ -399,7 +411,9 @@ function App() {
                         alt=""
                         className="headerPlayerImg"
                     />
-                    <div className="headerPlayerInfoName">Player2</div>
+                    <div className="headerPlayerInfoName">
+                        {playerName(1, COLUMN.WHITE)}
+                    </div>
                     <div>
                         color:
                         <span className="headerPlayerInfoWhiteSquare">
