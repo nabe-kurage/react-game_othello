@@ -51,6 +51,7 @@ function App() {
             newDiskSet[column] = [row];
         }
         setDiskSet({ ...diskSet, [colName]: newDiskSet });
+        // ここでプレイヤー変更しているはず
         changePlayer();
 
         setCount(count + 1);
@@ -58,13 +59,29 @@ function App() {
 
         countDisks();
         checkFinish();
+        // TODO: AI使わない場合は分岐を追加
         aiCheck();
     };
 
     const aiCheck = () => {
+        const afterChangesNextPlayer = !isNextPlayerBlack;
         // TODO: check next ai turn
-        if (!isNextPlayerBlack) {
-            console.log(othelloAi.computeBestMove(defaultDiskSet, false));
+        if (!afterChangesNextPlayer) {
+            const aiDesc = othelloAi.computeBestMove(defaultDiskSet, false);
+            console.log("aiDesc", aiDesc);
+            let newDiskSet;
+            newDiskSet = diskSet.whiteCol;
+
+            //TODO: 間を変更する設定追加
+            setTimeout(() => {
+                // putDisk(aiDesc.column, aiDesc.row);
+                if (newDiskSet[aiDesc.column]) {
+                    newDiskSet[aiDesc.column].push(aiDesc.row);
+                } else {
+                    newDiskSet[aiDesc.column] = [aiDesc.row];
+                }
+                setDiskSet({ ...diskSet, [aiDesc.colName]: newDiskSet });
+            }, 1500);
         }
     };
 
@@ -260,8 +277,11 @@ function App() {
         }
     };
 
-    const changePlayer = () => {
-        setNextPlayerBlack((isNextPlayerBlack) => !isNextPlayerBlack);
+    const changePlayer = async () => {
+        console.log(isNextPlayerBlack);
+        // MEMO: setNextPlayerBlackfが走るのは関数が走った後なので、もし新しい値が取りたければこの値を使う
+        const afterChangesNextPlayer = !isNextPlayerBlack;
+        await setNextPlayerBlack((isNextPlayerBlack) => afterChangesNextPlayer);
     };
 
     const skipButtonHandler = () => {
