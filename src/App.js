@@ -51,7 +51,7 @@ function App() {
             newDiskSet[column] = [row];
         }
         setDiskSet({ ...diskSet, [colName]: newDiskSet });
-        // ここでプレイヤー変更しているはず
+
         changePlayer();
 
         setCount(count + 1);
@@ -60,28 +60,47 @@ function App() {
         countDisks();
         checkFinish();
         // TODO: AI使わない場合は分岐を追加
-        aiCheck();
+        if (true) {
+            setTimeout(() => {
+                aiCheck();
+            }, 1500);
+        }
     };
 
     const aiCheck = () => {
         const afterChangesNextPlayer = !isNextPlayerBlack;
-        // TODO: check next ai turn
+
         if (!afterChangesNextPlayer) {
             const aiDesc = othelloAi.computeBestMove(defaultDiskSet, false);
-            console.log("aiDesc", aiDesc);
             let newDiskSet;
             newDiskSet = diskSet.whiteCol;
 
-            //TODO: 間を変更する設定追加
-            setTimeout(() => {
-                // putDisk(aiDesc.column, aiDesc.row);
-                if (newDiskSet[aiDesc.column]) {
-                    newDiskSet[aiDesc.column].push(aiDesc.row);
-                } else {
-                    newDiskSet[aiDesc.column] = [aiDesc.row];
+            if (newDiskSet[aiDesc.column]) {
+                newDiskSet[aiDesc.column].push(aiDesc.row);
+            } else {
+                newDiskSet[aiDesc.column] = [aiDesc.row];
+            }
+            setDiskSet({ ...diskSet, [aiDesc.colName]: newDiskSet });
+
+            directionsArray.forEach((direction) => {
+                if (
+                    checkPossibilityToTurnOverOneDirectionForAi(
+                        aiDesc.column,
+                        aiDesc.row,
+                        direction,
+                        0,
+                        true
+                    )
+                ) {
+                    turnOverDiskForAi(aiDesc.column, aiDesc.row, direction, 0);
                 }
-                setDiskSet({ ...diskSet, [aiDesc.colName]: newDiskSet });
-            }, 1500);
+            });
+
+            setNextPlayerBlack((isNextPlayerBlack) => true);
+            setCount(count + 1);
+            setSkipCounter(0);
+            countDisks();
+            checkFinish();
         }
     };
 
@@ -152,6 +171,37 @@ function App() {
         );
     };
 
+    const checkPossibilityToTurnOverOneDirectionForAi = (
+        column,
+        row,
+        incrementArray,
+        index,
+        isAi
+    ) => {
+        const incrementedColumn = column + incrementArray[0];
+        const incrementedRow = row + incrementArray[1];
+
+        if (
+            foundOpponentDisk(COLUMN.BLACK, incrementedColumn, incrementedRow)
+        ) {
+            return checkPossibilityToTurnOverOneDirectionForAi(
+                incrementedColumn,
+                incrementedRow,
+                incrementArray,
+                index + 1,
+                true
+            );
+        }
+
+        // 最終的に自分のコマがあるかチェック
+        return foundMyDisk(
+            index,
+            COLUMN.WHITE,
+            incrementedColumn,
+            incrementedRow
+        );
+    };
+
     const foundOpponentDisk = (
         OpponentPlayerDiskSet,
         incrementedColumn,
@@ -182,6 +232,49 @@ function App() {
         const OpponentPlayerDiskSet = !isNextPlayerBlack
             ? COLUMN.BLACK
             : COLUMN.WHITE;
+
+        // ERROR: 一個以上ひっくり返すときに一個しかひっくり返らない -> SOLVE: whileして繰り返す
+        let incrementedColumn = column + incrementArray[0];
+        let incrementedRow = row + incrementArray[1];
+        let newDiskSet = diskSet;
+
+        while (
+            diskSet[OpponentPlayerDiskSet][incrementedColumn]?.indexOf(
+                incrementedRow
+            ) > -1
+        ) {
+            // 自分の増える持ちコマ
+            if (newDiskSet[PlayerDiskSet][incrementedColumn]) {
+                newDiskSet[PlayerDiskSet][incrementedColumn].push(
+                    incrementedRow
+                );
+            } else {
+                newDiskSet[PlayerDiskSet][incrementedColumn] = [incrementedRow];
+            }
+
+            // 相手の減る持ちコマ
+            newDiskSet[OpponentPlayerDiskSet][incrementedColumn].splice(
+                diskSet[OpponentPlayerDiskSet][incrementedColumn].indexOf(
+                    incrementedRow
+                ),
+                1
+            );
+
+            incrementedColumn = incrementedColumn + incrementArray[0];
+            incrementedRow = incrementedRow + incrementArray[1];
+        }
+
+        //ERROR: はじめ白→黒で白にする際になってくれないのを直す→[-1,-1]のところが値が間違っていた
+        setDiskSet({
+            ...diskSet,
+            [PlayerDiskSet]: newDiskSet[PlayerDiskSet],
+            [OpponentPlayerDiskSet]: newDiskSet[OpponentPlayerDiskSet],
+        });
+    };
+
+    const turnOverDiskForAi = (column, row, incrementArray) => {
+        const PlayerDiskSet = COLUMN.WHITE;
+        const OpponentPlayerDiskSet = COLUMN.BLACK;
 
         // ERROR: 一個以上ひっくり返すときに一個しかひっくり返らない -> SOLVE: whileして繰り返す
         let incrementedColumn = column + incrementArray[0];
@@ -278,7 +371,6 @@ function App() {
     };
 
     const changePlayer = async () => {
-        console.log(isNextPlayerBlack);
         // MEMO: setNextPlayerBlackfが走るのは関数が走った後なので、もし新しい値が取りたければこの値を使う
         const afterChangesNextPlayer = !isNextPlayerBlack;
         await setNextPlayerBlack((isNextPlayerBlack) => afterChangesNextPlayer);
