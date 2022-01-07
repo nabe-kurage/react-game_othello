@@ -367,9 +367,10 @@ function App() {
         : "headerPlayerInfo headerPlayerInfo--myTurn";
 
     const playerName = (index, squareColor) => {
-        if (aiColor === COLUMN.WHITE && squareColor === COLUMN.WHITE) {
-            return `Computer`;
-        } else if (aiColor === COLUMN.BLACK && squareColor === COLUMN.BLACK) {
+        if (
+            (aiColor === COLUMN.WHITE && squareColor === COLUMN.WHITE) ||
+            (aiColor === COLUMN.BLACK && squareColor === COLUMN.BLACK)
+        ) {
             return `Computer`;
         }
         return `Player ${index}`;
