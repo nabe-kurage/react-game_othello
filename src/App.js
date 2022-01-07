@@ -10,6 +10,9 @@ import {
     defaultDiskSet,
     COLUMN,
 } from "./constData.js";
+import { GreedyPlayer } from "./othelloAI";
+
+const othelloAi = new GreedyPlayer();
 
 // column = |||, row = 三
 // class App extends .. でもできる。その場合constructorやthis.stateといった感じでobujectを定義する形になる
@@ -25,7 +28,9 @@ function App() {
         playbackRate: 1.5,
         volume: 0.1,
     });
+    const [aiColor, setAiColor] = useState(COLUMN.WHITE);
 
+    // TODO: add stop sound
     const [clickSoundPlay] = useSound(click);
     const squareClickHandlar = (column, row) => {
         if (winnerColor || !checkAbleToPutDisk(column, row)) {
@@ -47,6 +52,7 @@ function App() {
             newDiskSet[column] = [row];
         }
         setDiskSet({ ...diskSet, [colName]: newDiskSet });
+
         changePlayer();
 
         setCount(count + 1);
@@ -54,6 +60,49 @@ function App() {
 
         countDisks();
         checkFinish();
+        // TODO: AI使わない場合は分岐を追加
+        if (aiColor.length > 0) {
+            setTimeout(() => {
+                aiCheck();
+            }, 1500);
+        }
+    };
+
+    const aiCheck = () => {
+        const afterChangesNextPlayer = !isNextPlayerBlack;
+
+        if (!afterChangesNextPlayer) {
+            const aiDesc = othelloAi.computeBestMove(defaultDiskSet, false);
+            let newDiskSet;
+            newDiskSet = diskSet.whiteCol;
+
+            if (newDiskSet[aiDesc.column]) {
+                newDiskSet[aiDesc.column].push(aiDesc.row);
+            } else {
+                newDiskSet[aiDesc.column] = [aiDesc.row];
+            }
+            setDiskSet({ ...diskSet, [aiDesc.colName]: newDiskSet });
+
+            directionsArray.forEach((direction) => {
+                if (
+                    checkPossibilityToTurnOverOneDirection(
+                        aiDesc.column,
+                        aiDesc.row,
+                        direction,
+                        0,
+                        true
+                    )
+                ) {
+                    turnOverDisk(aiDesc.column, aiDesc.row, direction, true);
+                }
+            });
+
+            setNextPlayerBlack((isNextPlayerBlack) => true);
+            setCount(count + 1);
+            setSkipCounter(0);
+            countDisks();
+            checkFinish();
+        }
     };
 
     const checkAbleToPutDisk = (column, row) => {
@@ -68,7 +117,8 @@ function App() {
                     column,
                     row,
                     directionsArray[i],
-                    0
+                    0,
+                    false
                 )
             ) {
                 putDisk(column, row);
@@ -89,12 +139,21 @@ function App() {
         column,
         row,
         incrementArray,
-        index
+        index,
+        isAi
     ) => {
-        const PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
-        const OpponentPlayerDiskSet = !isNextPlayerBlack
-            ? COLUMN.BLACK
-            : COLUMN.WHITE;
+        let PlayerDiskSet, OpponentPlayerDiskSet;
+        if (isAi) {
+            PlayerDiskSet = isNextPlayerBlack ? COLUMN.WHITE : COLUMN.BLACK;
+            OpponentPlayerDiskSet = !isNextPlayerBlack
+                ? COLUMN.WHITE
+                : COLUMN.BLACK;
+        } else {
+            PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
+            OpponentPlayerDiskSet = !isNextPlayerBlack
+                ? COLUMN.BLACK
+                : COLUMN.WHITE;
+        }
 
         const incrementedColumn = column + incrementArray[0];
         const incrementedRow = row + incrementArray[1];
@@ -106,12 +165,23 @@ function App() {
                 incrementedRow
             )
         ) {
-            return checkPossibilityToTurnOverOneDirection(
-                incrementedColumn,
-                incrementedRow,
-                incrementArray,
-                index + 1
-            );
+            if (isAi) {
+                return checkPossibilityToTurnOverOneDirection(
+                    incrementedColumn,
+                    incrementedRow,
+                    incrementArray,
+                    index + 1,
+                    true
+                );
+            } else {
+                return checkPossibilityToTurnOverOneDirection(
+                    incrementedColumn,
+                    incrementedRow,
+                    incrementArray,
+                    index + 1,
+                    false
+                );
+            }
         }
 
         // 最終的に自分のコマがあるかチェック
@@ -148,11 +218,19 @@ function App() {
         );
     };
 
-    const turnOverDisk = (column, row, incrementArray) => {
-        const PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
-        const OpponentPlayerDiskSet = !isNextPlayerBlack
-            ? COLUMN.BLACK
-            : COLUMN.WHITE;
+    const turnOverDisk = (column, row, incrementArray, isAi) => {
+        let PlayerDiskSet, OpponentPlayerDiskSet;
+        if (isAi) {
+            PlayerDiskSet = isNextPlayerBlack ? COLUMN.WHITE : COLUMN.BLACK;
+            OpponentPlayerDiskSet = !isNextPlayerBlack
+                ? COLUMN.WHITE
+                : COLUMN.BLACK;
+        } else {
+            PlayerDiskSet = isNextPlayerBlack ? COLUMN.BLACK : COLUMN.WHITE;
+            OpponentPlayerDiskSet = !isNextPlayerBlack
+                ? COLUMN.BLACK
+                : COLUMN.WHITE;
+        }
 
         // ERROR: 一個以上ひっくり返すときに一個しかひっくり返らない -> SOLVE: whileして繰り返す
         let incrementedColumn = column + incrementArray[0];
@@ -200,10 +278,11 @@ function App() {
                     column,
                     row,
                     direction,
-                    0
+                    0,
+                    false
                 )
             ) {
-                turnOverDisk(column, row, direction, 0);
+                turnOverDisk(column, row, direction, false);
             }
         });
     };
@@ -248,8 +327,10 @@ function App() {
         }
     };
 
-    const changePlayer = () => {
-        setNextPlayerBlack((isNextPlayerBlack) => !isNextPlayerBlack);
+    const changePlayer = async () => {
+        // MEMO: setNextPlayerBlackfが走るのは関数が走った後なので、もし新しい値が取りたければこの値を使う
+        const afterChangesNextPlayer = !isNextPlayerBlack;
+        await setNextPlayerBlack((isNextPlayerBlack) => afterChangesNextPlayer);
     };
 
     const skipButtonHandler = () => {
@@ -285,6 +366,16 @@ function App() {
         ? "headerPlayerInfo"
         : "headerPlayerInfo headerPlayerInfo--myTurn";
 
+    const playerName = (index, squareColor) => {
+        if (
+            (aiColor === COLUMN.WHITE && squareColor === COLUMN.WHITE) ||
+            (aiColor === COLUMN.BLACK && squareColor === COLUMN.BLACK)
+        ) {
+            return `Computer`;
+        }
+        return `Player ${index}`;
+    };
+
     return (
         <div className="App">
             <h1 className="title">Othello</h1>
@@ -295,7 +386,9 @@ function App() {
                         alt=""
                         className="headerPlayerImg"
                     />
-                    <div className="headerPlayerInfoName">Player1</div>
+                    <div className="headerPlayerInfoName">
+                        {playerName(1, COLUMN.BLACK)}
+                    </div>
                     <div>
                         color:
                         <span className="headerPlayerInfoBlackSquare">
@@ -319,7 +412,9 @@ function App() {
                         alt=""
                         className="headerPlayerImg"
                     />
-                    <div className="headerPlayerInfoName">Player2</div>
+                    <div className="headerPlayerInfoName">
+                        {playerName(1, COLUMN.WHITE)}
+                    </div>
                     <div>
                         color:
                         <span className="headerPlayerInfoWhiteSquare">
@@ -379,6 +474,7 @@ class Square extends React.Component {
             <div
                 className="square"
                 onClick={() => {
+                    this.props.hoverSoundStopHandlar();
                     this.props.hoverSoundLoadHandlar();
                     this.props.squareClickHandlar(
                         this.props.columnNum,
